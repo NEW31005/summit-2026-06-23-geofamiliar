@@ -6,6 +6,7 @@ import '../models/contexts.dart';
 import '../models/dna_trait.dart';
 import '../models/memory_card.dart';
 import '../models/walk.dart';
+import '../services/location_service.dart';
 import '../state/app_scope.dart';
 import '../theme/app_colors.dart';
 import '../widgets/app_background.dart';
@@ -30,8 +31,29 @@ class _HatchScreenState extends State<HatchScreen> {
   PlaceType _place = PlaceType.station;
   TimeContext _time = TimeContext.morning;
   WeatherContext _weather = WeatherContext.clear;
+  bool _locating = false;
+  String _locationMessage = '現在地は任意です。使わない場合は、下から今日いた場所を選んでください。';
+  LocationRead? _locationRead;
 
   void _goScan() => setState(() => _step = _Step.scan);
+
+  Future<void> _useCurrentLocation() async {
+    setState(() {
+      _locating = true;
+      _locationMessage = '現在地を確認しています...';
+    });
+    final read = await const DeviceLocationService().readCurrentContext();
+    if (!mounted) return;
+    setState(() {
+      _locating = false;
+      _locationRead = read;
+      _locationMessage = read.message;
+      if (read.isReady) {
+        _place = read.place;
+        _time = read.time;
+      }
+    });
+  }
 
   void _startHatch() {
     setState(() => _step = _Step.hatching);
@@ -84,7 +106,7 @@ class _HatchScreenState extends State<HatchScreen> {
           const CompanionAvatar(
             primary: DnaTrait.calm,
             secondary: DnaTrait.warmth,
-            mood: 'Waiting',
+            mood: '待っている',
             stageRing: 0,
             seed: 1,
             hatched: false,
@@ -94,30 +116,21 @@ class _HatchScreenState extends State<HatchScreen> {
           Text('GeoFamiliar', style: Theme.of(context).textTheme.displaySmall),
           const SizedBox(height: 10),
           Text(
-            'Your ordinary places - the station, the river, the late-night shop - quietly become a companion only your life could make.',
+            'いつもの駅、公園、夜のコンビニ。あなたが通った場所の気配から、生活圏だけの相棒が生まれます。',
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.bodyLarge,
           ),
           const Spacer(),
-          _featureRow(
-            Icons.my_location_rounded,
-            'Your places become its personality',
-          ),
+          _featureRow(Icons.my_location_rounded, '通った場所が相棒の性格になります'),
           const SizedBox(height: 10),
-          _featureRow(
-            Icons.auto_stories_rounded,
-            'Your week becomes its memories',
-          ),
+          _featureRow(Icons.auto_stories_rounded, '一週間のさんぽが記憶カードになります'),
           const SizedBox(height: 10),
-          _featureRow(
-            Icons.eco_rounded,
-            'Gentle by design - no risky routes, ever',
-          ),
+          _featureRow(Icons.eco_rounded, '急がせない・危ない道へ誘導しない設計です'),
           const SizedBox(height: 28),
           FilledButton.icon(
             onPressed: _goScan,
             icon: const Icon(Icons.radar_rounded),
-            label: const Text("Scan today's place"),
+            label: const Text('今日の場所から生まれさせる'),
             style: FilledButton.styleFrom(
               backgroundColor: AppColors.mintDeep,
               foregroundColor: Colors.white,
@@ -169,17 +182,14 @@ class _HatchScreenState extends State<HatchScreen> {
               onPressed: () => setState(() => _step = _Step.intro),
               icon: const Icon(Icons.arrow_back_rounded),
             ),
-            Text(
-              'Scan your place',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
+            Text('今日の場所を選ぶ', style: Theme.of(context).textTheme.headlineMedium),
           ],
         ),
         const SizedBox(height: 4),
-        _mockLocationBanner(),
+        _locationBanner(),
         const SizedBox(height: 18),
         Text(
-          'Where are you right now?',
+          'いまいる場所、または今日通った場所は？',
           style: Theme.of(context).textTheme.titleMedium,
         ),
         const SizedBox(height: 10),
@@ -201,7 +211,7 @@ class _HatchScreenState extends State<HatchScreen> {
           }).toList(),
         ),
         const SizedBox(height: 20),
-        Text('Time of day', style: Theme.of(context).textTheme.titleMedium),
+        Text('時間帯', style: Theme.of(context).textTheme.titleMedium),
         const SizedBox(height: 10),
         ChoicePills<TimeContext>(
           items: TimeContext.values,
@@ -211,7 +221,7 @@ class _HatchScreenState extends State<HatchScreen> {
           onSelect: (t) => setState(() => _time = t),
         ),
         const SizedBox(height: 20),
-        Text('Weather', style: Theme.of(context).textTheme.titleMedium),
+        Text('天気', style: Theme.of(context).textTheme.titleMedium),
         const SizedBox(height: 10),
         ChoicePills<WeatherContext>(
           items: WeatherContext.values,
@@ -237,7 +247,7 @@ class _HatchScreenState extends State<HatchScreen> {
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    'From this moment',
+                    'この条件から生まれる相棒',
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                 ],
@@ -252,7 +262,7 @@ class _HatchScreenState extends State<HatchScreen> {
                   const SizedBox(width: 4),
                   Expanded(
                     child: Text(
-                      '${_place.label}, ${_time.label.toLowerCase()}, ${_weather.label.toLowerCase()}.',
+                      '${_place.label} / ${_time.label} / ${_weather.label}',
                       style: const TextStyle(
                         fontSize: 12.5,
                         fontWeight: FontWeight.w700,
@@ -264,7 +274,7 @@ class _HatchScreenState extends State<HatchScreen> {
               ),
               const SizedBox(height: 6),
               Text(
-                '${_place.tagline} A companion born here would carry that with it.',
+                '${_place.tagline} ここで生まれる相棒は、その気配を持っていきます。',
                 style: const TextStyle(
                   fontSize: 12.5,
                   height: 1.35,
@@ -282,7 +292,7 @@ class _HatchScreenState extends State<HatchScreen> {
               ),
               const SizedBox(height: 10),
               Text(
-                'It will hatch as a ${DnaEngine.formName(preview.dominant)} - ${DnaEngine.personality(preview).title}.',
+                '「${DnaEngine.formName(preview.dominant)}」として生まれそうです。性格は「${DnaEngine.personality(preview).title}」。',
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
             ],
@@ -292,7 +302,7 @@ class _HatchScreenState extends State<HatchScreen> {
         FilledButton.icon(
           onPressed: _startHatch,
           icon: const Icon(Icons.egg_alt_rounded),
-          label: const Text('Hatch my companion'),
+          label: const Text('相棒を生まれさせる'),
           style: FilledButton.styleFrom(
             backgroundColor: AppColors.coralDeep,
             foregroundColor: Colors.white,
@@ -302,7 +312,8 @@ class _HatchScreenState extends State<HatchScreen> {
     );
   }
 
-  Widget _mockLocationBanner() {
+  Widget _locationBanner() {
+    final read = _locationRead;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
@@ -310,22 +321,50 @@ class _HatchScreenState extends State<HatchScreen> {
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: AppColors.hairline),
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(
-            Icons.shield_moon_rounded,
-            size: 18,
-            color: AppColors.mintDeep,
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Text(
-              'Using simulated location for this preview. Real GPS stays opt-in and private - pick the place that fits your day.',
-              style: const TextStyle(
-                fontSize: 12,
-                height: 1.3,
-                color: AppColors.inkMuted,
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Icon(
+                Icons.my_location_rounded,
+                size: 18,
+                color: AppColors.mintDeep,
               ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  _locationMessage,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    height: 1.3,
+                    color: AppColors.inkMuted,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          if (read != null && read.isReady) ...[
+            const SizedBox(height: 6),
+            Text(
+              '取得精度: ${read.accuracyLabel} / 座標は保存・送信しません',
+              style: const TextStyle(fontSize: 11, color: AppColors.inkMuted),
+            ),
+          ],
+          const SizedBox(height: 10),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: OutlinedButton.icon(
+              onPressed: _locating ? null : _useCurrentLocation,
+              icon: _locating
+                  ? const SizedBox(
+                      width: 15,
+                      height: 15,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.near_me_rounded, size: 18),
+              label: Text(_locating ? '取得中...' : '現在地から候補を出す'),
             ),
           ),
         ],
@@ -343,7 +382,7 @@ class _HatchScreenState extends State<HatchScreen> {
           CompanionAvatar(
             primary: _place.dna.keys.first,
             secondary: DnaTrait.warmth,
-            mood: 'Waiting',
+            mood: '待っている',
             stageRing: 0,
             seed: _place.index + 1,
             hatched: false,
@@ -361,7 +400,7 @@ class _HatchScreenState extends State<HatchScreen> {
           ),
           const SizedBox(height: 18),
           const Text(
-            'Reading your Life DNA...',
+            '生活圏DNAを読んでいます...',
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w700,
@@ -407,7 +446,7 @@ class _HatchScreenState extends State<HatchScreen> {
           child: CompanionAvatar(
             primary: personality.dominant,
             secondary: personality.secondary,
-            mood: 'Buzzing',
+            mood: 'そわそわ',
             stageRing: 1,
             seed: _place.index + 1,
             sparkle: true,
@@ -417,7 +456,7 @@ class _HatchScreenState extends State<HatchScreen> {
         const SizedBox(height: 8),
         Center(
           child: Text(
-            'It hatched!',
+            '生まれました',
             style: Theme.of(context).textTheme.labelSmall?.copyWith(
               color: AppColors.amber,
               letterSpacing: 1.5,
@@ -427,7 +466,7 @@ class _HatchScreenState extends State<HatchScreen> {
         const SizedBox(height: 4),
         Center(
           child: Text(
-            'A $form is born',
+            '「$form」が生まれました',
             style: Theme.of(
               context,
             ).textTheme.headlineMedium?.copyWith(color: Colors.white),
@@ -478,7 +517,7 @@ class _HatchScreenState extends State<HatchScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Why these traits',
+                'この性格になった理由',
                 style: Theme.of(context).textTheme.titleMedium,
               ),
               const SizedBox(height: 6),
@@ -533,10 +572,7 @@ class _HatchScreenState extends State<HatchScreen> {
                     color: AppColors.coralDeep,
                   ),
                   const SizedBox(width: 8),
-                  Text(
-                    'Its first memory',
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
+                  Text('最初の記憶', style: Theme.of(context).textTheme.titleMedium),
                 ],
               ),
               const SizedBox(height: 8),
@@ -556,7 +592,7 @@ class _HatchScreenState extends State<HatchScreen> {
         FilledButton.icon(
           onPressed: _enterApp,
           icon: const Icon(Icons.home_rounded),
-          label: Text('Meet $form'),
+          label: Text('$formに会いに行く'),
           style: FilledButton.styleFrom(
             backgroundColor: AppColors.mintDeep,
             foregroundColor: Colors.white,
@@ -595,17 +631,17 @@ class _HatchScreenState extends State<HatchScreen> {
   String _greeting(DnaTrait dominant) {
     switch (dominant) {
       case DnaTrait.vitality:
-        return 'Oh - hi! I feel like I could run already. Are you the one I get to follow?';
+        return 'あ、こんにちは！もう走り出せそうです。これからあなたについて行っていいですか？';
       case DnaTrait.calm:
-        return '...oh. Hello. It is quiet and kind here. I think I will like it, with you.';
+        return '……こんにちは。ここは静かでやさしいです。あなたとなら、好きになれそうです。';
       case DnaTrait.curiosity:
-        return 'Hello! Where are we? What is that? I think I am going to ask you everything.';
+        return 'こんにちは！ここはどこですか？あれは何ですか？たぶん、これから何でも聞きます。';
       case DnaTrait.warmth:
-        return 'Hi. You feel a little like home already. I am glad it is you.';
+        return 'こんにちは。あなたはもう少し家みたいです。あなたでよかったです。';
       case DnaTrait.focus:
-        return 'Hello. I can see you clearly. Let us find our rhythm together.';
+        return 'こんにちは。あなたの輪郭がよく見えます。一緒にリズムを作りましょう。';
       case DnaTrait.wonder:
-        return 'Oh... hello. The light is lovely from here. I am glad I woke up to you.';
+        return 'あ……こんにちは。ここから見える光がきれいです。あなたのそばで目覚めてよかったです。';
     }
   }
 }

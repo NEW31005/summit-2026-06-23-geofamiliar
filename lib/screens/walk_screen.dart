@@ -7,6 +7,7 @@ import '../models/dna_trait.dart';
 import '../models/life_dna.dart';
 import '../models/memory_card.dart';
 import '../models/walk.dart';
+import '../services/location_service.dart';
 import '../state/app_scope.dart';
 import '../theme/app_colors.dart';
 import '../widgets/dna_widgets.dart';
@@ -27,6 +28,8 @@ class _WalkScreenState extends State<WalkScreen> {
   TimeContext _time = TimeContext.morning;
   WeatherContext _weather = WeatherContext.clear;
   bool _initialised = false;
+  bool _locating = false;
+  String? _locationMessage;
 
   static const _maxStops = 5;
 
@@ -58,6 +61,24 @@ class _WalkScreenState extends State<WalkScreen> {
           RouteStop(PlaceType.park),
           RouteStop(PlaceType.cafe),
         ]);
+    });
+  }
+
+  Future<void> _addCurrentLocationStop() async {
+    if (_route.length >= _maxStops) return;
+    setState(() {
+      _locating = true;
+      _locationMessage = '現在地を確認しています...';
+    });
+    final read = await const DeviceLocationService().readCurrentContext();
+    if (!mounted) return;
+    setState(() {
+      _locating = false;
+      _locationMessage = read.message;
+      if (read.isReady) {
+        _time = read.time;
+        _route.add(RouteStop(read.place));
+      }
     });
   }
 
@@ -94,19 +115,25 @@ class _WalkScreenState extends State<WalkScreen> {
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 28),
       children: [
-        Text("Today's walk", style: Theme.of(context).textTheme.headlineMedium),
+        Text('今日のさんぽ記録', style: Theme.of(context).textTheme.headlineMedium),
         const SizedBox(height: 4),
         const Text(
-          'Add a few places you actually pass through. Each one shapes your companion.',
-          style: TextStyle(fontSize: 13, color: AppColors.inkMuted, height: 1.35),
+          '歩いたあとで、実際に通った場所をいくつか足してください。1つずつ相棒の性格になります。',
+          style: TextStyle(
+            fontSize: 13,
+            color: AppColors.inkMuted,
+            height: 1.35,
+          ),
         ),
         const SizedBox(height: 16),
 
         _suggestionBanner(AppScope.of(context).companion.dna),
         const SizedBox(height: 18),
+        _gpsAddBanner(),
+        const SizedBox(height: 18),
 
         // Context
-        const SectionHeader(eyebrow: 'Context', title: 'Time & weather'),
+        const SectionHeader(eyebrow: '状況', title: '時間と天気'),
         const SizedBox(height: 10),
         ChoicePills<TimeContext>(
           items: TimeContext.values,
@@ -128,20 +155,19 @@ class _WalkScreenState extends State<WalkScreen> {
 
         // Route builder
         SectionHeader(
-          eyebrow: 'Route',
-          title: 'Your stops',
+          eyebrow: '記録',
+          title: '通った場所',
           trailing: TextButton.icon(
             onPressed: _suggestRoute,
             icon: const Icon(Icons.auto_fix_high_rounded, size: 16),
-            label: const Text('Suggest'),
+            label: const Text('おまかせ'),
           ),
         ),
         const SizedBox(height: 10),
         _routeArea(hasRoute),
         const SizedBox(height: 18),
 
-        Text('Add a place',
-            style: Theme.of(context).textTheme.titleMedium),
+        Text('場所を追加', style: Theme.of(context).textTheme.titleMedium),
         const SizedBox(height: 10),
         Wrap(
           spacing: 8,
@@ -153,8 +179,10 @@ class _WalkScreenState extends State<WalkScreen> {
               child: Opacity(
                 opacity: full ? 0.4 : 1,
                 child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 9,
+                  ),
                   decoration: BoxDecoration(
                     color: AppColors.surface,
                     borderRadius: BorderRadius.circular(13),
@@ -165,14 +193,20 @@ class _WalkScreenState extends State<WalkScreen> {
                     children: [
                       Icon(p.icon, size: 16, color: AppColors.inkSoft),
                       const SizedBox(width: 6),
-                      Text(p.label,
-                          style: const TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.inkSoft)),
+                      Text(
+                        p.label,
+                        style: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.inkSoft,
+                        ),
+                      ),
                       const SizedBox(width: 4),
-                      const Icon(Icons.add_rounded,
-                          size: 15, color: AppColors.mintDeep),
+                      const Icon(
+                        Icons.add_rounded,
+                        size: 15,
+                        color: AppColors.mintDeep,
+                      ),
                     ],
                   ),
                 ),
@@ -183,10 +217,7 @@ class _WalkScreenState extends State<WalkScreen> {
         const SizedBox(height: 22),
 
         // Route forecast - tells the user what finishing will do before they do it.
-        if (hasRoute) ...[
-          _forecastCard(dna),
-          const SizedBox(height: 14),
-        ],
+        if (hasRoute) ...[_forecastCard(dna), const SizedBox(height: 14)],
 
         _safetyNote(),
         const SizedBox(height: 18),
@@ -194,7 +225,7 @@ class _WalkScreenState extends State<WalkScreen> {
         FilledButton.icon(
           onPressed: hasRoute ? _finishWalk : null,
           icon: const Icon(Icons.check_circle_rounded),
-          label: Text(hasRoute ? 'Finish walk & make a memory' : 'Add a stop to begin'),
+          label: Text(hasRoute ? '記録して記憶を作る' : 'まず場所を1つ追加'),
           style: FilledButton.styleFrom(
             backgroundColor: AppColors.coralDeep,
             foregroundColor: Colors.white,
@@ -207,6 +238,70 @@ class _WalkScreenState extends State<WalkScreen> {
 
   /// A gentle, safe "today's idea" - suggests the companion's weakest trait and
   /// an optional place to round it out. Never pushes distance, speed or timing.
+  Widget _gpsAddBanner() {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.hairline),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Icon(
+            Icons.my_location_rounded,
+            size: 20,
+            color: AppColors.mintDeep,
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  '現在地から1地点追加',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.ink,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  _locationMessage ??
+                      '許可した場合だけ、現在地から場所カテゴリを推定します。座標は保存・送信しません。',
+                  style: const TextStyle(
+                    fontSize: 12.5,
+                    height: 1.3,
+                    color: AppColors.inkMuted,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          IconButton(
+            onPressed: _locating || _route.length >= _maxStops
+                ? null
+                : _addCurrentLocationStop,
+            tooltip: '現在地を追加',
+            icon: _locating
+                ? const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(
+                    Icons.add_location_alt_rounded,
+                    color: AppColors.coralDeep,
+                  ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _suggestionBanner(LifeDna dna) {
     final suggestion = WalkAdvisor.gentleSuggestion(dna);
     return Container(
@@ -226,8 +321,11 @@ class _WalkScreenState extends State<WalkScreen> {
               color: suggestion.weakest.color.withValues(alpha: 0.18),
               borderRadius: BorderRadius.circular(11),
             ),
-            child: Icon(suggestion.place.icon,
-                size: 19, color: suggestion.weakest.color),
+            child: Icon(
+              suggestion.place.icon,
+              size: 19,
+              color: suggestion.weakest.color,
+            ),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -236,20 +334,31 @@ class _WalkScreenState extends State<WalkScreen> {
               children: [
                 Row(
                   children: [
-                    const Text('Gentle idea',
-                        style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w800,
-                            color: AppColors.coralDeep)),
+                    const Text(
+                      '今日のヒント',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.coralDeep,
+                      ),
+                    ),
                     const SizedBox(width: 6),
-                    Icon(suggestion.weakest.icon,
-                        size: 13, color: suggestion.weakest.color),
+                    Icon(
+                      suggestion.weakest.icon,
+                      size: 13,
+                      color: suggestion.weakest.color,
+                    ),
                   ],
                 ),
                 const SizedBox(height: 2),
-                Text(suggestion.message,
-                    style: const TextStyle(
-                        fontSize: 12.5, height: 1.3, color: AppColors.inkSoft)),
+                Text(
+                  suggestion.message,
+                  style: const TextStyle(
+                    fontSize: 12.5,
+                    height: 1.3,
+                    color: AppColors.inkSoft,
+                  ),
+                ),
               ],
             ),
           ),
@@ -258,9 +367,12 @@ class _WalkScreenState extends State<WalkScreen> {
             onPressed: _route.length >= _maxStops
                 ? null
                 : () => _addStop(suggestion.place),
-            icon: const Icon(Icons.add_circle_rounded,
-                size: 24, color: AppColors.amber),
-            tooltip: 'Add ${suggestion.place.label}',
+            icon: const Icon(
+              Icons.add_circle_rounded,
+              size: 24,
+              color: AppColors.amber,
+            ),
+            tooltip: '${suggestion.place.label}を追加',
           ),
         ],
       ),
@@ -285,35 +397,50 @@ class _WalkScreenState extends State<WalkScreen> {
             children: [
               Icon(Icons.insights_rounded, size: 18, color: lead.color),
               const SizedBox(width: 8),
-              Text('Route forecast',
-                  style: Theme.of(context).textTheme.titleMedium),
+              Text(
+                '記録すると増えるもの',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
               const Spacer(),
-              Text(_walk.strollLabel,
-                  style: const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.inkMuted)),
+              Text(
+                _walk.strollLabel,
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.inkMuted,
+                ),
+              ),
             ],
           ),
           if (forecast != null) ...[
             const SizedBox(height: 8),
-            Text(forecast,
-                style: const TextStyle(
-                    fontSize: 13, height: 1.35, color: AppColors.inkSoft)),
+            Text(
+              forecast,
+              style: const TextStyle(
+                fontSize: 13,
+                height: 1.35,
+                color: AppColors.inkSoft,
+              ),
+            ),
           ],
           const SizedBox(height: 12),
-          Text('Life DNA this walk adds',
-              style: const TextStyle(
-                  fontSize: 11.5,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.inkMuted)),
+          Text(
+            'このさんぽで増える生活圏DNA',
+            style: const TextStyle(
+              fontSize: 11.5,
+              fontWeight: FontWeight.w700,
+              color: AppColors.inkMuted,
+            ),
+          ),
           const SizedBox(height: 8),
           Wrap(
             spacing: 8,
             runSpacing: 8,
             children: dna.ranked
                 .where((t) => dna.of(t) > 0)
-                .map<Widget>((t) => DnaChip(trait: t, value: dna.of(t), dense: true))
+                .map<Widget>(
+                  (t) => DnaChip(trait: t, value: dna.of(t), dense: true),
+                )
                 .toList(),
           ),
         ],
@@ -328,31 +455,32 @@ class _WalkScreenState extends State<WalkScreen> {
         decoration: BoxDecoration(
           color: AppColors.surfaceAlt,
           borderRadius: BorderRadius.circular(18),
-          border: Border.all(
-            color: AppColors.hairline,
-          ),
+          border: Border.all(color: AppColors.hairline),
         ),
         child: const Column(
           children: [
             Icon(Icons.route_rounded, size: 28, color: AppColors.inkMuted),
             SizedBox(height: 8),
-            Text('No stops yet',
-                style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.inkSoft)),
+            Text(
+              'まだ場所がありません',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                color: AppColors.inkSoft,
+              ),
+            ),
             SizedBox(height: 2),
-            Text('Tap a place below or use Suggest',
-                style: TextStyle(fontSize: 12.5, color: AppColors.inkMuted)),
+            Text(
+              '下の場所を押すか、おまかせを使ってください',
+              style: TextStyle(fontSize: 12.5, color: AppColors.inkMuted),
+            ),
           ],
         ),
       );
     }
 
     return Column(
-      children: [
-        for (int i = 0; i < _route.length; i++) _routeStopRow(i),
-      ],
+      children: [for (int i = 0; i < _route.length; i++) _routeStopRow(i)],
     );
   }
 
@@ -374,16 +502,17 @@ class _WalkScreenState extends State<WalkScreen> {
                   shape: BoxShape.circle,
                 ),
                 alignment: Alignment.center,
-                child: Text('${i + 1}',
-                    style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w800)),
+                child: Text(
+                  '${i + 1}',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
               ),
               if (!isLast)
-                Expanded(
-                  child: Container(width: 2, color: AppColors.hairline),
-                ),
+                Expanded(child: Container(width: 2, color: AppColors.hairline)),
             ],
           ),
           const SizedBox(width: 12),
@@ -391,7 +520,10 @@ class _WalkScreenState extends State<WalkScreen> {
             child: Padding(
               padding: const EdgeInsets.only(bottom: 10),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 10,
+                ),
                 decoration: BoxDecoration(
                   color: AppColors.surface,
                   borderRadius: BorderRadius.circular(14),
@@ -405,24 +537,34 @@ class _WalkScreenState extends State<WalkScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(place.label,
-                              style: const TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w700,
-                                  color: AppColors.ink)),
-                          Text(place.tagline,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                  fontSize: 11.5, color: AppColors.inkMuted)),
+                          Text(
+                            place.label,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.ink,
+                            ),
+                          ),
+                          Text(
+                            place.tagline,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontSize: 11.5,
+                              color: AppColors.inkMuted,
+                            ),
+                          ),
                         ],
                       ),
                     ),
                     IconButton(
                       onPressed: () => _removeStop(i),
                       visualDensity: VisualDensity.compact,
-                      icon: const Icon(Icons.close_rounded,
-                          size: 18, color: AppColors.inkMuted),
+                      icon: const Icon(
+                        Icons.close_rounded,
+                        size: 18,
+                        color: AppColors.inkMuted,
+                      ),
                     ),
                   ],
                 ),
@@ -438,14 +580,20 @@ class _WalkScreenState extends State<WalkScreen> {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Icon(Icons.volunteer_activism_rounded,
-            size: 16, color: AppColors.mintDeep),
+        const Icon(
+          Icons.volunteer_activism_rounded,
+          size: 16,
+          color: AppColors.mintDeep,
+        ),
         const SizedBox(width: 8),
         Expanded(
           child: Text(
-            'Walk only where it is safe and comfortable for you. GeoFamiliar never rewards rushing, detours into risky places, or wandering late at night.',
+            '安全で無理のない場所だけを記録してください。GeoFamiliarは急ぐこと、危ない寄り道、深夜の無理な外出を評価しません。',
             style: const TextStyle(
-                fontSize: 11.5, height: 1.35, color: AppColors.inkMuted),
+              fontSize: 11.5,
+              height: 1.35,
+              color: AppColors.inkMuted,
+            ),
           ),
         ),
       ],
@@ -487,9 +635,14 @@ class _WalkRecapSheet extends StatelessWidget {
 
     return Container(
       padding: EdgeInsets.fromLTRB(
-          20, 14, 20, 28 + MediaQuery.of(context).viewInsets.bottom),
+        20,
+        14,
+        20,
+        28 + MediaQuery.of(context).viewInsets.bottom,
+      ),
       constraints: BoxConstraints(
-          maxHeight: MediaQuery.of(context).size.height * 0.86),
+        maxHeight: MediaQuery.of(context).size.height * 0.86,
+      ),
       decoration: const BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
@@ -498,144 +651,167 @@ class _WalkRecapSheet extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-          Container(
-            width: 40,
-            height: 4,
-            decoration: BoxDecoration(
-              color: AppColors.hairline,
-              borderRadius: BorderRadius.circular(2),
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: AppColors.hairline,
+                borderRadius: BorderRadius.circular(2),
+              ),
             ),
-          ),
-          const SizedBox(height: 18),
-          Container(
-            width: 60,
-            height: 60,
-            decoration: BoxDecoration(
-              color: lead.color.withValues(alpha: 0.16),
-              shape: BoxShape.circle,
+            const SizedBox(height: 18),
+            Container(
+              width: 60,
+              height: 60,
+              decoration: BoxDecoration(
+                color: lead.color.withValues(alpha: 0.16),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(Icons.check_rounded, size: 32, color: lead.color),
             ),
-            child: Icon(Icons.check_rounded, size: 32, color: lead.color),
-          ),
-          const SizedBox(height: 14),
-          Text('Walk complete',
-              style: Theme.of(context).textTheme.headlineMedium),
-          const SizedBox(height: 4),
-          const Text('Here is what changed',
+            const SizedBox(height: 14),
+            Text(
+              'さんぽ記録ができました',
+              style: Theme.of(context).textTheme.headlineMedium,
+            ),
+            const SizedBox(height: 4),
+            const Text(
+              '今回変わったところ',
               style: TextStyle(
-                  fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.inkMuted)),
-          const SizedBox(height: 16),
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: AppColors.inkMuted,
+              ),
+            ),
+            const SizedBox(height: 16),
 
-          // What changed: top trait gain + weekly progress.
-          Row(
-            children: [
-              Expanded(
-                child: _changeTile(
-                  icon: lead.icon,
-                  color: lead.color,
-                  big: '+${recap.leadGain.toStringAsFixed(0)}',
-                  label: '${lead.label} gained',
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: _changeTile(
-                  icon: Icons.eco_rounded,
-                  color: AppColors.mintDeep,
-                  big: '${recap.walksThisWeek}/${recap.walksPerWeek}',
-                  label: 'Week progress',
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(8),
-            child: Stack(
+            // What changed: top trait gain + weekly progress.
+            Row(
               children: [
-                Container(height: 10, color: AppColors.surfaceAlt),
-                FractionallySizedBox(
-                  widthFactor: progress == 0 ? 0.04 : progress,
-                  child: Container(
-                    height: 10,
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                          colors: [AppColors.mint, AppColors.amber]),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
+                Expanded(
+                  child: _changeTile(
+                    icon: lead.icon,
+                    color: lead.color,
+                    big: '+${recap.leadGain.toStringAsFixed(0)}',
+                    label: '${lead.label}が増えました',
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: _changeTile(
+                    icon: Icons.eco_rounded,
+                    color: AppColors.mintDeep,
+                    big: '${recap.walksThisWeek}/${recap.walksPerWeek}',
+                    label: '今週の進み具合',
                   ),
                 ),
               ],
             ),
-          ),
-          if (recap.weekReady) ...[
             const SizedBox(height: 12),
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: AppColors.amber.withValues(alpha: 0.14),
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: AppColors.amber.withValues(alpha: 0.4)),
-              ),
-              child: const Row(
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: Stack(
                 children: [
-                  Icon(Icons.celebration_rounded, size: 18, color: AppColors.coralDeep),
-                  SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      'Weekly evolution is ready - claim your card in the Evolve tab.',
-                      style: TextStyle(
-                          fontSize: 12.5, height: 1.3, fontWeight: FontWeight.w600,
-                          color: AppColors.inkSoft),
+                  Container(height: 10, color: AppColors.surfaceAlt),
+                  FractionallySizedBox(
+                    widthFactor: progress == 0 ? 0.04 : progress,
+                    child: Container(
+                      height: 10,
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [AppColors.mint, AppColors.amber],
+                        ),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                     ),
                   ),
                 ],
               ),
             ),
-          ],
-          const SizedBox(height: 16),
-
-          // The new memory.
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: AppColors.surfaceAlt,
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
+            if (recap.weekReady) ...[
+              const SizedBox(height: 12),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppColors.amber.withValues(alpha: 0.14),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(
+                    color: AppColors.amber.withValues(alpha: 0.4),
+                  ),
+                ),
+                child: const Row(
                   children: [
-                    Icon(memory.icon, size: 18, color: lead.color),
-                    const SizedBox(width: 8),
-                    Text('${memory.dayLabel}  -  ${memory.title}',
-                        style: const TextStyle(
-                            fontSize: 12.5,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.inkMuted)),
+                    Icon(
+                      Icons.celebration_rounded,
+                      size: 18,
+                      color: AppColors.coralDeep,
+                    ),
+                    SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        '今週の進化カードを受け取れます。進化タブを開いてください。',
+                        style: TextStyle(
+                          fontSize: 12.5,
+                          height: 1.3,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.inkSoft,
+                        ),
+                      ),
+                    ),
                   ],
                 ),
-                const SizedBox(height: 10),
-                Text('"${memory.diary}"',
+              ),
+            ],
+            const SizedBox(height: 16),
+
+            // The new memory.
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: AppColors.surfaceAlt,
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(memory.icon, size: 18, color: lead.color),
+                      const SizedBox(width: 8),
+                      Text(
+                        '${memory.dayLabel}  -  ${memory.title}',
+                        style: const TextStyle(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.inkMuted,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    '"${memory.diary}"',
                     style: const TextStyle(
-                        fontSize: 14,
-                        height: 1.4,
-                        fontStyle: FontStyle.italic,
-                        color: AppColors.ink)),
-              ],
+                      fontSize: 14,
+                      height: 1.4,
+                      fontStyle: FontStyle.italic,
+                      color: AppColors.ink,
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-          const SizedBox(height: 18),
-          FilledButton(
-            onPressed: () => Navigator.of(context).pop(),
-            style: FilledButton.styleFrom(
-              backgroundColor: AppColors.mintDeep,
-              foregroundColor: Colors.white,
+            const SizedBox(height: 18),
+            FilledButton(
+              onPressed: () => Navigator.of(context).pop(),
+              style: FilledButton.styleFrom(
+                backgroundColor: AppColors.mintDeep,
+                foregroundColor: Colors.white,
+              ),
+              child: const Text('閉じる'),
             ),
-            child: const Text('Lovely'),
-          ),
           ],
         ),
       ),
@@ -662,17 +838,25 @@ class _WalkRecapSheet extends StatelessWidget {
             children: [
               Icon(icon, size: 16, color: color),
               const SizedBox(width: 5),
-              Text(big,
-                  style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w800,
-                      color: AppColors.ink)),
+              Text(
+                big,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.ink,
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 2),
-          Text(label,
-              style: const TextStyle(
-                  fontSize: 11.5, fontWeight: FontWeight.w600, color: AppColors.inkMuted)),
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 11.5,
+              fontWeight: FontWeight.w600,
+              color: AppColors.inkMuted,
+            ),
+          ),
         ],
       ),
     );

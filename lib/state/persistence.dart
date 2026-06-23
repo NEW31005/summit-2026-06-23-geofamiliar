@@ -29,29 +29,28 @@ class GameSnapshot {
   final bool premiumTeaserSeen;
 
   Map<String, dynamic> toJson() => {
-        'companion': companion.toJson(),
-        'memories': memories.map((m) => m.toJson()).toList(),
-        'weeklyCards': weeklyCards.map((c) => c.toJson()).toList(),
-        'weekDna': weekDna.toJson(),
-        'memoriesThisWeek': memoriesThisWeek,
-        'isPremium': isPremium,
-        'premiumTeaserSeen': premiumTeaserSeen,
-      };
+    'companion': companion.toJson(),
+    'memories': memories.map((m) => m.toJson()).toList(),
+    'weeklyCards': weeklyCards.map((c) => c.toJson()).toList(),
+    'weekDna': weekDna.toJson(),
+    'memoriesThisWeek': memoriesThisWeek,
+    'isPremium': isPremium,
+    'premiumTeaserSeen': premiumTeaserSeen,
+  };
 
   factory GameSnapshot.fromJson(Map<String, dynamic> json) => GameSnapshot(
-        companion:
-            Companion.fromJson(json['companion'] as Map<String, dynamic>),
-        memories: (json['memories'] as List)
-            .map((m) => MemoryCard.fromJson(m as Map<String, dynamic>))
-            .toList(),
-        weeklyCards: (json['weeklyCards'] as List)
-            .map((c) => WeeklyCard.fromJson(c as Map<String, dynamic>))
-            .toList(),
-        weekDna: LifeDna.fromJson(json['weekDna'] as Map<String, dynamic>),
-        memoriesThisWeek: json['memoriesThisWeek'] as int? ?? 0,
-        isPremium: json['isPremium'] as bool? ?? false,
-        premiumTeaserSeen: json['premiumTeaserSeen'] as bool? ?? false,
-      );
+    companion: Companion.fromJson(json['companion'] as Map<String, dynamic>),
+    memories: (json['memories'] as List)
+        .map((m) => MemoryCard.fromJson(m as Map<String, dynamic>))
+        .toList(),
+    weeklyCards: (json['weeklyCards'] as List)
+        .map((c) => WeeklyCard.fromJson(c as Map<String, dynamic>))
+        .toList(),
+    weekDna: LifeDna.fromJson(json['weekDna'] as Map<String, dynamic>),
+    memoriesThisWeek: json['memoriesThisWeek'] as int? ?? 0,
+    isPremium: json['isPremium'] as bool? ?? false,
+    premiumTeaserSeen: json['premiumTeaserSeen'] as bool? ?? false,
+  );
 }
 
 /// Thin wrapper over shared_preferences. All persistence failures are swallowed
@@ -59,7 +58,7 @@ class GameSnapshot {
 class Persistence {
   Persistence._();
 
-  static const _key = 'geofamiliar.save.v1';
+  static const _key = 'geofamiliar.save.v2.ja';
 
   static Future<void> save(GameSnapshot snapshot) async {
     try {

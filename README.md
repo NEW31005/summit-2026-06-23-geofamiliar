@@ -1,66 +1,43 @@
 # GeoFamiliar
 
-**Walk through real places and grow an AI companion shaped by the life you actually live.**
+**いつもの場所から、生活圏だけの相棒を育てる位置情報ゲーム。**
 
-GeoFamiliar turns ordinary movement into a character-growing loop. The places you pass
-through - a station, a riverside, a late-night store - become **Life DNA** that shapes a
-companion's personality, mood, memories, and weekly evolution. The point is not "where did I
-go?" but "what kind of companion is being born from my everyday life?"
+駅、公園、カフェ、夜のコンビニなど、通った場所の気配が「生活圏DNA」になり、
+相棒の性格、気分、記憶、週間進化を形づくります。
 
-> Status: this is a **demo / prototype build**. Location, weather, AI text, accounts and
-> payments are all **simulated** - there is no real GPS, backend, or charge. The experience is
-> intentionally complete and persistent so it feels real to play.
+> Status: デモ / プレビュー版です。現在地取得は任意で、取得できた場合だけ場所カテゴリの候補に反映します。座標は保存・送信しません。天気、決済、アカウント、バックエンド、自由生成AIはまだモックです。
 
----
+## コアループ
 
-## The core loop
+1. **誕生** - 今日の場所、時間帯、天気から相棒を生まれさせる。
+2. **ホーム** - 相棒の姿、気分、生活圏DNA、今週の進捗を見る。
+3. **さんぽ記録** - 歩いたあとに、実際に通った場所を追加する。現在地から候補追加も可能。
+4. **記憶** - 記録したさんぽから、相棒の短い日記が生まれる。
+5. **進化 / プレミアム** - 一週間のさんぽを進化カードにし、継承やアルバムの価値を見せる。
 
-1. **Hatch** - scan today's place context (place + time of day + weather) and meet a companion
-   born from it. The reveal shows *why* it got its first traits.
-2. **Home** - see your companion, its mood and stage, today's Life DNA, and weekly progress.
-3. **Walk** - build a gentle route of places you pass through. Each stop adds Life DNA.
-4. **Memory** - finishing a walk writes a diary line in the companion's voice and shows what
-   changed (top trait gained, weekly progress, the new memory).
-5. **DNA / Evolution / Premium** - watch traits accumulate on a trait wheel, claim a weekly
-   evolution card, and preview the premium value.
+## 安全とプライバシー
 
-## Life DNA
+- 現在地取得は任意。拒否しても手動選択で遊べます。
+- 座標は保存せず、外部送信もしません。
+- 速度、距離、危ない寄り道、深夜の無理な外出は評価しません。
+- 記憶文はテンプレート生成で、自由生成AIの過剰表現はしていません。
 
-Six trait axes - **Vitality, Calm, Curiosity, Warmth, Focus, Wonder** - are nudged by every
-place, time and weather context. The blend gives the companion its personality, its "form"
-(Driftling, Sparkling, Seekling ...), its mood, and its eventual evolution stage
-(Hatchling -> Wanderer -> Kindred -> Luminary).
+## 技術
 
-## Privacy & safety stance
+- Flutter stable + Dart / Material 3
+- `ChangeNotifier` と `InheritedNotifier` による軽量状態管理
+- `shared_preferences` によるローカル保存
+- `geolocator` による任意の現在地取得
+- Flutter Web はスマホ確認用の公開プレビュー。正式ターゲットは Android / iOS ネイティブです。
 
-- **Simulated location only.** No real GPS is requested in this build. Any future real-location
-  feature would be strictly opt-in and treated as private/local data.
-- **No unsafe movement incentives.** The game never rewards speed, distance, risky detours,
-  trespassing, night wandering, or repeated loops. Walk only where it is safe for you.
-- **Warm, never manipulative.** The companion invites; it does not guilt. Premium unlocks depth
-  and expression, never a penalty for playing free.
-- **Curated text.** Memory lines come from curated templates, not free-form generation, so the
-  content stays family-safe.
-
-## Tech
-
-- Flutter (stable) + Dart, Material 3 with custom UI.
-- Lightweight local state: `ChangeNotifier` + a small `InheritedNotifier` scope. No external
-  state-management package.
-- Local persistence via `shared_preferences`.
-- Custom-painted companion and DNA radar (`CustomPainter`) - no image assets required.
-- Official target is Android/iOS native mobile; Flutter Web is used as the verification preview.
-
-## Run it
-
-From the project root:
+## 実行
 
 ```bash
 flutter pub get
-flutter run            # choose a device, or: flutter run -d chrome
+flutter run
 ```
 
-## Verify it
+## 検証
 
 ```bash
 flutter pub get
@@ -69,24 +46,8 @@ flutter test
 flutter build web
 ```
 
-## Project layout
+## 既知の未実装
 
-```
-lib/
-  main.dart, app.dart
-  models/    dna_trait, contexts, life_dna, walk, memory_card, evolution, companion
-  logic/     dna_engine, memory_generator, evolution_engine   (pure, unit-tested)
-  state/     app_state, app_scope, persistence
-  theme/     app_colors, app_theme
-  widgets/   companion_avatar, companion_panel, dna_radar, dna_widgets,
-             selectors, section_header, misc_widgets, app_background
-  screens/   hatch, home_shell, home, walk, dna, memories, evolution, premium
-test/        dna_engine, memory_generator, evolution_engine, widget/app-state loop
-```
-
-## Demo limitations
-
-- Location, weather, AI generation, authentication, backend and payments are mocked.
-- Premium "unlock" is a labelled demo toggle - no real transaction occurs.
-- Inheritance / legacy is surfaced as a premium teaser, not yet a playable mechanic.
-- Real-GPS, push notifications and account sync are intentionally out of scope for this build.
+- 住所・POIの正確な逆引きは未実装。現在地から場所カテゴリ候補を出す段階です。
+- 実決済、サーバー側権利確認、アカウント同期、プッシュ通知は未実装です。
+- 継承はプレミアム価値として見せていますが、完全なプレイアブル機能ではありません。

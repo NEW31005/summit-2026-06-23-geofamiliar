@@ -17,18 +17,18 @@ class MemoryGenerator {
     bool premium = false,
   }) {
     final lead = walk.lead;
-    final leadPlace =
-        walk.stops.isNotEmpty ? walk.stops.first.place : PlaceType.park;
-    final lastPlace =
-        walk.stops.isNotEmpty ? walk.stops.last.place : leadPlace;
+    final leadPlace = walk.stops.isNotEmpty
+        ? walk.stops.first.place
+        : PlaceType.park;
+    final lastPlace = walk.stops.isNotEmpty ? walk.stops.last.place : leadPlace;
 
     final templates = _diaryTemplates[lead]!;
     final base = templates[seed.abs() % templates.length];
     var diary = base
-        .replaceAll('{first}', leadPlace.label.toLowerCase())
-        .replaceAll('{last}', lastPlace.label.toLowerCase())
-        .replaceAll('{time}', walk.time.label.toLowerCase())
-        .replaceAll('{weather}', walk.weather.label.toLowerCase());
+        .replaceAll('{first}', leadPlace.label)
+        .replaceAll('{last}', lastPlace.label)
+        .replaceAll('{time}', walk.time.label)
+        .replaceAll('{weather}', walk.weather.label);
 
     if (premium) {
       diary = '$diary ${_voiceFlourish[lead]!}';
@@ -45,59 +45,59 @@ class MemoryGenerator {
       places: walk.stops.map((s) => s.place).toList(),
       time: walk.time,
       weather: walk.weather,
-      dayLabel: 'Day $dayIndex',
+      dayLabel: '$dayIndex日目',
       premium: premium,
     );
   }
 
   static const Map<DnaTrait, List<String>> _titles = {
-    DnaTrait.vitality: ['A quick bright loop', 'Streets full of go', 'Morning momentum'],
-    DnaTrait.calm: ['A slow, easy hour', 'Quiet by the water', 'Nothing to rush'],
-    DnaTrait.curiosity: ['Something new today', 'Down an unknown turn', 'Wide-eyed wandering'],
-    DnaTrait.warmth: ['A soft, kind day', 'Close to home', 'Golden and gentle'],
-    DnaTrait.focus: ['Clear and ordered', 'A steady line', 'Everything in place'],
-    DnaTrait.wonder: ['Small magic at dusk', 'Lights and quiet', 'A dreamy detour'],
+    DnaTrait.vitality: ['明るく早いひと回り', '動き出す道', '朝の勢い'],
+    DnaTrait.calm: ['ゆっくりした時間', '水辺の静けさ', '急がなくていい日'],
+    DnaTrait.curiosity: ['今日は新しい発見', '知らない角を曲がって', '目が覚めるさんぽ'],
+    DnaTrait.warmth: ['やさしい一日', '家の近くで', '金色で穏やか'],
+    DnaTrait.focus: ['整った道すじ', 'まっすぐな時間', '頭が片づく日'],
+    DnaTrait.wonder: ['夕暮れの小さな魔法', '明かりと静けさ', '夢みたいな寄り道'],
   };
 
   static const Map<DnaTrait, List<String>> _diaryTemplates = {
     DnaTrait.vitality: [
-      'We started at the {first} and the whole {time} felt fast and alive. I could keep going!',
-      'So much movement around the {first} today. My heart was racing in a good way.',
-      'The {first} buzzed under {weather} skies - I felt like I could take on anything.',
+      '{first}から始まった{time}は、体の中まで明るく動いていました。まだ行けそうです。',
+      '今日は{first}のまわりに人の流れがあって、胸がいい感じに弾みました。',
+      '{weather}の下の{first}はにぎやかで、なんでもできそうな気がしました。',
     ],
     DnaTrait.calm: [
-      'We drifted from the {first} to the {last} and I just breathed. A {time} like this is enough.',
-      'The {weather} made the {first} so still. I felt myself slow down and settle.',
-      'No hurry at all by the {first}. I want to remember how quiet it was.',
+      '{first}から{last}まで、ただ息をするだけでよかったです。こんな{time}で十分です。',
+      '{weather}の{first}はとても静かで、心がゆっくり落ち着いていきました。',
+      '{first}では急ぐ必要がありませんでした。あの静けさを覚えていたいです。',
     ],
     DnaTrait.curiosity: [
-      'The {first} had a corner I had never noticed. I keep wondering what else is out there.',
-      'We wandered to the {last} and everything looked new. I asked a hundred little questions.',
-      'A {time} full of small surprises near the {first}. My curiosity is wide awake.',
+      '{first}に、今まで気づかなかった角がありました。ほかにも何があるのか気になります。',
+      '{last}まで歩いたら、全部が少し新しく見えました。小さな質問がたくさん生まれました。',
+      '{first}の近くの{time}は、小さな驚きでいっぱいでした。好奇心が起きています。',
     ],
     DnaTrait.warmth: [
-      'Home felt close from the {first} all the way to the {last}. A warm, kind {time}.',
-      'The {first} smelled like comfort under {weather} air. I felt looked after.',
-      'Soft light around the {first} today. I just wanted to stay near the people.',
+      '{first}から{last}まで、帰る場所が近く感じました。あたたかくてやさしい{time}です。',
+      '{weather}の空気の中で、{first}は安心する匂いがしました。守られている気がしました。',
+      '今日は{first}のまわりの光がやわらかくて、人のそばにいたくなりました。',
     ],
     DnaTrait.focus: [
-      'From the {first} to the {last}, every step felt ordered. My thoughts went clear.',
-      'A {time} with a clean rhythm near the {first}. I knew exactly where I was going.',
-      'The {first} helped me line everything up. Calm, sharp, sure.',
+      '{first}から{last}まで、一歩ずつ順番に整っていく感じがしました。頭が澄みました。',
+      '{first}の近くの{time}には、きれいなリズムがありました。行き先がはっきりしました。',
+      '{first}が、ばらばらだったものを並べ直してくれました。静かで、冴えて、確かです。',
     ],
     DnaTrait.wonder: [
-      'The {first} glowed in the {time}. For a moment the ordinary felt a little magic.',
-      'Quiet lights from the {first} to the {last}. I held my breath at how lovely it was.',
-      '{weather} on the glass near the {first} - the whole {time} felt like a small dream.',
+      '{time}の{first}が少し光って見えました。いつもの場所が、少しだけ魔法みたいでした。',
+      '{first}から{last}まで、静かな明かりが続いていました。きれいで、息を止めました。',
+      '{first}の近くの窓に{weather}の気配があって、{time}全体が小さな夢みたいでした。',
     ],
   };
 
   static const Map<DnaTrait, String> _voiceFlourish = {
-    DnaTrait.vitality: '(said in a bright, breathless rush)',
-    DnaTrait.calm: '(murmured, almost a sigh)',
-    DnaTrait.curiosity: '(eyes wide, already asking what next)',
-    DnaTrait.warmth: '(said with a soft, contented smile)',
-    DnaTrait.focus: '(spoken slow and certain)',
-    DnaTrait.wonder: '(whispered, like a secret)',
+    DnaTrait.vitality: '（息を弾ませながら、明るく）',
+    DnaTrait.calm: '（ため息みたいに、そっと）',
+    DnaTrait.curiosity: '（目を丸くして、次を聞きたそうに）',
+    DnaTrait.warmth: '（満ち足りた笑顔で、やわらかく）',
+    DnaTrait.focus: '（ゆっくり、確かめるように）',
+    DnaTrait.wonder: '（秘密を話すみたいに、小さな声で）',
   };
 }

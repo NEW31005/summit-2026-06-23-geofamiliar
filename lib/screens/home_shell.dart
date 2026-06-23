@@ -22,19 +22,19 @@ class _HomeShellState extends State<HomeShell> {
   int _index = 0;
 
   static const _destinations = [
-    _Dest('Home', Icons.home_rounded, Icons.home_outlined),
-    _Dest('Walk', Icons.directions_walk_rounded, Icons.directions_walk_outlined),
+    _Dest('ホーム', Icons.home_rounded, Icons.home_outlined),
+    _Dest('さんぽ', Icons.directions_walk_rounded, Icons.directions_walk_outlined),
     _Dest('DNA', Icons.science_rounded, Icons.science_outlined),
-    _Dest('Memories', Icons.auto_stories_rounded, Icons.auto_stories_outlined),
-    _Dest('Evolve', Icons.eco_rounded, Icons.eco_outlined),
+    _Dest('記憶', Icons.auto_stories_rounded, Icons.auto_stories_outlined),
+    _Dest('進化', Icons.eco_rounded, Icons.eco_outlined),
   ];
 
   void _goTo(int i) => setState(() => _index = i);
 
   void _openPremium() {
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => const PremiumScreen()),
-    );
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => const PremiumScreen()));
   }
 
   @override
@@ -53,10 +53,7 @@ class _HomeShellState extends State<HomeShell> {
         bottom: false,
         child: AnimatedSwitcher(
           duration: const Duration(milliseconds: 250),
-          child: KeyedSubtree(
-            key: ValueKey(_index),
-            child: pages[_index],
-          ),
+          child: KeyedSubtree(key: ValueKey(_index), child: pages[_index]),
         ),
       ),
       bottomNavigationBar: _BottomBar(
@@ -110,7 +107,9 @@ class _BottomBar extends StatelessWidget {
             children: List.generate(destinations.length, (i) {
               final d = destinations[i];
               final selected = i == index;
-              final accent = isPremium ? AppColors.coralDeep : AppColors.mintDeep;
+              final accent = isPremium
+                  ? AppColors.coralDeep
+                  : AppColors.mintDeep;
               return Expanded(
                 child: InkWell(
                   onTap: () => onTap(i),
@@ -120,7 +119,9 @@ class _BottomBar extends StatelessWidget {
                       AnimatedContainer(
                         duration: const Duration(milliseconds: 200),
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 4),
+                          horizontal: 16,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
                           color: selected
                               ? accent.withValues(alpha: 0.14)
@@ -138,7 +139,9 @@ class _BottomBar extends StatelessWidget {
                         d.label,
                         style: TextStyle(
                           fontSize: 11,
-                          fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                          fontWeight: selected
+                              ? FontWeight.w700
+                              : FontWeight.w500,
                           color: selected ? accent : AppColors.inkMuted,
                         ),
                       ),

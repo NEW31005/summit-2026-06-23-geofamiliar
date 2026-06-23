@@ -24,11 +24,15 @@ class DnaScreen extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 28),
       children: [
-        Text('Life DNA', style: Theme.of(context).textTheme.headlineMedium),
+        Text('生活圏DNA', style: Theme.of(context).textTheme.headlineMedium),
         const SizedBox(height: 4),
         const Text(
-          'The blend of places, times and weather your companion is made from.',
-          style: TextStyle(fontSize: 13, color: AppColors.inkMuted, height: 1.35),
+          '相棒を形づくる、場所・時間・天気の混ざり方です。',
+          style: TextStyle(
+            fontSize: 13,
+            color: AppColors.inkMuted,
+            height: 1.35,
+          ),
         ),
         const SizedBox(height: 16),
 
@@ -40,29 +44,39 @@ class DnaScreen extends StatelessWidget {
               Center(child: DnaRadar(dna: dna, size: 240)),
               const SizedBox(height: 8),
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 10,
+                ),
                 decoration: BoxDecoration(
                   color: personality.dominant.color.withValues(alpha: 0.10),
                   borderRadius: BorderRadius.circular(14),
                 ),
                 child: Row(
                   children: [
-                    Icon(personality.dominant.icon,
-                        size: 20, color: personality.dominant.color),
+                    Icon(
+                      personality.dominant.icon,
+                      size: 20,
+                      color: personality.dominant.color,
+                    ),
                     const SizedBox(width: 10),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(personality.title,
-                              style: Theme.of(context).textTheme.titleMedium),
+                          Text(
+                            personality.title,
+                            style: Theme.of(context).textTheme.titleMedium,
+                          ),
                           const SizedBox(height: 2),
-                          Text(personality.description,
-                              style: const TextStyle(
-                                  fontSize: 12.5,
-                                  height: 1.3,
-                                  color: AppColors.inkSoft)),
+                          Text(
+                            personality.description,
+                            style: const TextStyle(
+                              fontSize: 12.5,
+                              height: 1.3,
+                              color: AppColors.inkSoft,
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -75,23 +89,25 @@ class DnaScreen extends StatelessWidget {
         const SizedBox(height: 20),
 
         // Full breakdown
-        const SectionHeader(eyebrow: 'Breakdown', title: 'Trait totals'),
+        const SectionHeader(eyebrow: '内訳', title: '性格の合計'),
         const SizedBox(height: 8),
         SoftCard(
           child: Column(
             children: DnaTrait.values
-                .map((t) => TraitBar(
-                      trait: t,
-                      fill: dna.relative(t),
-                      value: dna.of(t),
-                    ))
+                .map(
+                  (t) => TraitBar(
+                    trait: t,
+                    fill: dna.relative(t),
+                    value: dna.of(t),
+                  ),
+                )
                 .toList(),
           ),
         ),
         const SizedBox(height: 20),
 
         // Weekly mix
-        const SectionHeader(eyebrow: 'This week', title: 'Weekly DNA mix'),
+        const SectionHeader(eyebrow: '今週', title: '今週のDNA'),
         const SizedBox(height: 8),
         if (weekDna.sum > 0)
           Wrap(
@@ -103,12 +119,14 @@ class DnaScreen extends StatelessWidget {
                 .toList(),
           )
         else
-          const Text('Take a walk to start this week\'s mix.',
-              style: TextStyle(fontSize: 13, color: AppColors.inkMuted)),
+          const Text(
+            'さんぽを記録すると、今週のDNAがここに出ます。',
+            style: TextStyle(fontSize: 13, color: AppColors.inkMuted),
+          ),
         const SizedBox(height: 22),
 
         // Place contribution guide
-        const SectionHeader(eyebrow: 'Guide', title: 'Where traits come from'),
+        const SectionHeader(eyebrow: 'ガイド', title: 'どの場所で何が増える？'),
         const SizedBox(height: 8),
         SoftCard(
           child: Column(
@@ -132,11 +150,14 @@ class DnaScreen extends StatelessWidget {
         const SizedBox(width: 10),
         SizedBox(
           width: 96,
-          child: Text(place.label,
-              style: const TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.ink)),
+          child: Text(
+            place.label,
+            style: const TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+              color: AppColors.ink,
+            ),
+          ),
         ),
         Expanded(
           child: Wrap(

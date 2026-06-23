@@ -20,11 +20,7 @@ class RouteStop {
 /// The walk's Life DNA is the sum of every stop's context DNA. Walking is the
 /// game's only input - this is where movement becomes growth.
 class Walk {
-  Walk({
-    required this.stops,
-    required this.time,
-    required this.weather,
-  });
+  Walk({required this.stops, required this.time, required this.weather});
 
   final List<RouteStop> stops;
   final TimeContext time;
@@ -49,6 +45,6 @@ class Walk {
   /// this is a gentle, flavour-only figure derived from the number of stops.
   String get strollLabel {
     final approxMinutes = stops.length * 8;
-    return '$approxMinutes min stroll';
+    return '約$approxMinutes分';
   }
 }

@@ -12,8 +12,7 @@ class LifeDna {
 
   final Map<DnaTrait, double> totals;
 
-  factory LifeDna.empty() =>
-      LifeDna({for (final t in DnaTrait.values) t: 0.0});
+  factory LifeDna.empty() => LifeDna({for (final t in DnaTrait.values) t: 0.0});
 
   /// Build from a single context blend (place + time + weather already merged).
   factory LifeDna.from(Map<DnaTrait, double> points) {
@@ -92,8 +91,9 @@ class LifeDna {
     return (entropy / maxEntropy).clamp(0.0, 1.0);
   }
 
-  Map<String, dynamic> toJson() =>
-      {for (final entry in totals.entries) entry.key.name: entry.value};
+  Map<String, dynamic> toJson() => {
+    for (final entry in totals.entries) entry.key.name: entry.value,
+  };
 
   factory LifeDna.fromJson(Map<String, dynamic> json) {
     final map = {for (final t in DnaTrait.values) t: 0.0};

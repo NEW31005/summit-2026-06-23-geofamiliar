@@ -106,10 +106,12 @@ class TraitBar extends StatelessWidget {
                     child: Container(
                       height: 10,
                       decoration: BoxDecoration(
-                        gradient: LinearGradient(colors: [
-                          trait.color.withValues(alpha: 0.7),
-                          trait.color,
-                        ]),
+                        gradient: LinearGradient(
+                          colors: [
+                            trait.color.withValues(alpha: 0.7),
+                            trait.color,
+                          ],
+                        ),
                         borderRadius: BorderRadius.circular(8),
                       ),
                     ),

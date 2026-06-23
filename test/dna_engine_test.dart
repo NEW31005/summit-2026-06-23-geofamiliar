@@ -32,10 +32,10 @@ void main() {
   group('Personality', () {
     test('dominant trait drives the form name', () {
       final calm = LifeDna.from({DnaTrait.calm: 5, DnaTrait.warmth: 2});
-      expect(DnaEngine.formName(calm.dominant), 'Driftling');
+      expect(DnaEngine.formName(calm.dominant), 'ユラリコ');
 
       final vital = LifeDna.from({DnaTrait.vitality: 6, DnaTrait.focus: 2});
-      expect(DnaEngine.formName(vital.dominant), 'Sparkling');
+      expect(DnaEngine.formName(vital.dominant), 'ハシリコ');
     });
 
     test('personality uses dominant then secondary, never equal', () {

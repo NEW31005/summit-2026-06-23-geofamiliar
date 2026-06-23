@@ -46,8 +46,7 @@ class DnaEngine {
     PlaceType place,
     TimeContext time,
     WeatherContext weather,
-  ) =>
-      LifeDna.from(contextDna(place, time, weather));
+  ) => LifeDna.from(contextDna(place, time, weather));
 
   /// Derive a personality from accumulated Life DNA.
   static Personality personality(LifeDna dna) {
@@ -67,58 +66,61 @@ class DnaEngine {
   static String formName(DnaTrait dominant) {
     switch (dominant) {
       case DnaTrait.vitality:
-        return 'Sparkling';
+        return 'ハシリコ';
       case DnaTrait.calm:
-        return 'Driftling';
+        return 'ユラリコ';
       case DnaTrait.curiosity:
-        return 'Seekling';
+        return 'サガシコ';
       case DnaTrait.warmth:
-        return 'Emberling';
+        return 'ホノリコ';
       case DnaTrait.focus:
-        return 'Clearling';
+        return 'スミリコ';
       case DnaTrait.wonder:
-        return 'Dreamling';
+        return 'ユメリコ';
     }
   }
 
   /// A short mood line driven by the most recent context the companion lived.
-  static String moodFor(PlaceType place, TimeContext time, WeatherContext weather) =>
-      moodForTrait(contextLifeDna(place, time, weather).dominant);
+  static String moodFor(
+    PlaceType place,
+    TimeContext time,
+    WeatherContext weather,
+  ) => moodForTrait(contextLifeDna(place, time, weather).dominant);
 
   /// The mood word a given trait evokes.
   static String moodForTrait(DnaTrait lead) {
     switch (lead) {
       case DnaTrait.vitality:
-        return 'Buzzing';
+        return 'そわそわ';
       case DnaTrait.calm:
-        return 'Settled';
+        return 'ほっとしている';
       case DnaTrait.curiosity:
-        return 'Inquisitive';
+        return 'きょろきょろ';
       case DnaTrait.warmth:
-        return 'Cosy';
+        return 'ぬくぬく';
       case DnaTrait.focus:
-        return 'Sharp';
+        return 'すっきり';
       case DnaTrait.wonder:
-        return 'Dreamy';
+        return 'うっとり';
     }
   }
 
   static String _titleFor(DnaTrait dom, DnaTrait sec) {
     const lead = {
-      DnaTrait.vitality: 'Restless',
-      DnaTrait.calm: 'Gentle',
-      DnaTrait.curiosity: 'Wandering',
-      DnaTrait.warmth: 'Tender',
-      DnaTrait.focus: 'Steady',
-      DnaTrait.wonder: 'Quiet',
+      DnaTrait.vitality: '弾む',
+      DnaTrait.calm: 'おだやかな',
+      DnaTrait.curiosity: '探したがりの',
+      DnaTrait.warmth: 'やさしい',
+      DnaTrait.focus: 'まっすぐな',
+      DnaTrait.wonder: '夢みる',
     };
     const noun = {
-      DnaTrait.vitality: 'Spark',
-      DnaTrait.calm: 'Drift',
-      DnaTrait.curiosity: 'Explorer',
-      DnaTrait.warmth: 'Heart',
-      DnaTrait.focus: 'Mind',
-      DnaTrait.wonder: 'Dreamer',
+      DnaTrait.vitality: '火花',
+      DnaTrait.calm: '水面',
+      DnaTrait.curiosity: '探検家',
+      DnaTrait.warmth: '灯り',
+      DnaTrait.focus: '羅針盤',
+      DnaTrait.wonder: '夢',
     };
     return '${lead[dom]} ${noun[sec]}';
   }
@@ -127,19 +129,19 @@ class DnaEngine {
     final domPhrase = _phrase[dom]!;
     final secPhrase = _phrase[sec]!;
     final temper = balance > 0.78
-        ? 'It carries a little of everywhere you go.'
+        ? 'いろいろな場所の気配を少しずつ持っています。'
         : balance < 0.45
-            ? 'It leans hard into one kind of place.'
-            : 'It has a clear shape with room to grow.';
-    return 'Mostly $domPhrase, touched by $secPhrase. $temper';
+        ? 'ひとつの場所の色がかなり強く出ています。'
+        : '芯が見えつつ、まだ伸びしろがあります。';
+    return '$domPhrase が強く、$secPhrase も少し混ざっています。$temper';
   }
 
   static const Map<DnaTrait, String> _phrase = {
-    DnaTrait.vitality: 'bright and quick',
-    DnaTrait.calm: 'slow and easy',
-    DnaTrait.curiosity: 'eager to wander',
-    DnaTrait.warmth: 'soft and kind',
-    DnaTrait.focus: 'clear-headed',
-    DnaTrait.wonder: 'a little dreamy',
+    DnaTrait.vitality: '明るく動き出したい感じ',
+    DnaTrait.calm: 'ゆっくり息をつける感じ',
+    DnaTrait.curiosity: '知らないものを見つけたい感じ',
+    DnaTrait.warmth: 'やわらかく安心する感じ',
+    DnaTrait.focus: '頭がすっと整う感じ',
+    DnaTrait.wonder: '少し夢を見ているような感じ',
   };
 }

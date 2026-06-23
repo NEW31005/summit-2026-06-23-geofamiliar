@@ -34,7 +34,8 @@ class AppState extends ChangeNotifier {
   bool get loading => _loading;
 
   bool get hasHatched => _companion.hatched;
-  int get walksRemaining => EvolutionEngine.walksRemaining(_companion.walksThisWeek);
+  int get walksRemaining =>
+      EvolutionEngine.walksRemaining(_companion.walksThisWeek);
 
   /// Load any saved game from local storage.
   Future<void> init() async {
@@ -59,7 +60,11 @@ class AppState extends ChangeNotifier {
   /// Hatch the companion from the first scanned place context.
   /// Returns the very first memory the companion writes.
   MemoryCard hatch(PlaceType place, TimeContext time, WeatherContext weather) {
-    final seedDna = Walk(stops: [RouteStop(place)], time: time, weather: weather).dna;
+    final seedDna = Walk(
+      stops: [RouteStop(place)],
+      time: time,
+      weather: weather,
+    ).dna;
     _companion = Companion(
       id: 'companion-1',
       name: '', // set below from its form
@@ -78,7 +83,11 @@ class AppState extends ChangeNotifier {
 
     _weekDna = seedDna;
 
-    final firstWalk = Walk(stops: [RouteStop(place)], time: time, weather: weather);
+    final firstWalk = Walk(
+      stops: [RouteStop(place)],
+      time: time,
+      weather: weather,
+    );
     final memory = MemoryGenerator.generate(
       firstWalk,
       seed: place.index + 3,
@@ -180,14 +189,16 @@ class AppState extends ChangeNotifier {
   }
 
   void _persist() {
-    Persistence.save(GameSnapshot(
-      companion: _companion,
-      memories: _memories,
-      weeklyCards: _weeklyCards,
-      weekDna: _weekDna,
-      memoriesThisWeek: _memoriesThisWeek,
-      isPremium: _isPremium,
-      premiumTeaserSeen: _premiumTeaserSeen,
-    ));
+    Persistence.save(
+      GameSnapshot(
+        companion: _companion,
+        memories: _memories,
+        weeklyCards: _weeklyCards,
+        weekDna: _weekDna,
+        memoriesThisWeek: _memoriesThisWeek,
+        isPremium: _isPremium,
+        premiumTeaserSeen: _premiumTeaserSeen,
+      ),
+    );
   }
 }

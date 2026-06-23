@@ -8,44 +8,44 @@ import 'package:flutter/material.dart';
 /// from my life".
 enum DnaTrait {
   vitality(
-    label: 'Vitality',
-    short: 'VIT',
-    blurb: 'Energy from busy streets, commutes and bright mornings.',
+    label: '活力',
+    short: '活',
+    blurb: '駅、通勤路、明るい朝から集まる勢い。',
     icon: Icons.bolt_rounded,
     color: Color(0xFFFF8A65), // coral
   ),
   calm(
-    label: 'Calm',
-    short: 'CAL',
-    blurb: 'Stillness gathered by rivers, parks and quiet homes.',
+    label: '静けさ',
+    short: '静',
+    blurb: '川沿い、公園、家の近くから集まる落ち着き。',
     icon: Icons.spa_rounded,
     color: Color(0xFF4DD0B1), // mint
   ),
   curiosity(
-    label: 'Curiosity',
-    short: 'CUR',
-    blurb: 'Wonder picked up in shops, new corners and travel.',
+    label: '好奇心',
+    short: '好',
+    blurb: '商店街、知らない角、旅先から集まる発見。',
     icon: Icons.travel_explore_rounded,
     color: Color(0xFFFFC04D), // amber
   ),
   warmth(
-    label: 'Warmth',
-    short: 'WRM',
-    blurb: 'Comfort from cafes, neighbourhoods and golden light.',
+    label: 'ぬくもり',
+    short: '温',
+    blurb: 'カフェ、住宅街、夕方の光から集まる安心。',
     icon: Icons.favorite_rounded,
     color: Color(0xFFFF6F91), // rose-coral
   ),
   focus(
-    label: 'Focus',
-    short: 'FOC',
-    blurb: 'Clarity built in offices, stations and midday routines.',
+    label: '集中',
+    short: '集',
+    blurb: 'オフィス街、駅、昼の用事から集まる冴え。',
     icon: Icons.center_focus_strong_rounded,
     color: Color(0xFF5C9DFF), // soft blue accent
   ),
   wonder(
-    label: 'Wonder',
-    short: 'WND',
-    blurb: 'Quiet magic from dusk, night lights and rainy glass.',
+    label: '不思議',
+    short: '夢',
+    blurb: '夕暮れ、夜の明かり、雨の窓から集まる余韻。',
     icon: Icons.auto_awesome_rounded,
     color: Color(0xFFB388FF), // gentle violet accent
   );
@@ -64,6 +64,8 @@ enum DnaTrait {
   final IconData icon;
   final Color color;
 
-  static DnaTrait fromName(String name) =>
-      DnaTrait.values.firstWhere((t) => t.name == name, orElse: () => DnaTrait.calm);
+  static DnaTrait fromName(String name) => DnaTrait.values.firstWhere(
+    (t) => t.name == name,
+    orElse: () => DnaTrait.calm,
+  );
 }

@@ -5,7 +5,7 @@
     "display": "standalone",
     "background_color": "#FFFBF4",
     "theme_color": "#2BB99A",
-    "description": "Walk through real places and grow an AI companion shaped by your living-area Life DNA. Demo build with simulated location.",
+    "description": "いつもの場所から、生活圏だけの相棒を育てる位置情報ゲーム。",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

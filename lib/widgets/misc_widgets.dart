@@ -101,10 +101,7 @@ class EmptyState extends StatelessWidget {
               textAlign: TextAlign.center,
               style: theme.textTheme.bodyMedium,
             ),
-            if (action != null) ...[
-              const SizedBox(height: 18),
-              action!,
-            ],
+            if (action != null) ...[const SizedBox(height: 18), action!],
           ],
         ),
       ),
@@ -114,7 +111,7 @@ class EmptyState extends StatelessWidget {
 
 /// A subtle "Premium" badge.
 class PremiumBadge extends StatelessWidget {
-  const PremiumBadge({super.key, this.label = 'Premium'});
+  const PremiumBadge({super.key, this.label = 'プレミアム'});
 
   final String label;
 
@@ -131,7 +128,11 @@ class PremiumBadge extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.workspace_premium_rounded, size: 13, color: Colors.white),
+          const Icon(
+            Icons.workspace_premium_rounded,
+            size: 13,
+            color: Colors.white,
+          ),
           const SizedBox(width: 4),
           Text(
             label,

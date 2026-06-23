@@ -48,7 +48,7 @@ void main() {
       expect(card.evolved, isTrue);
       expect(card.stage, EvolutionStage.wanderer);
       expect(card.topTrait, DnaTrait.curiosity);
-      expect(card.headline.toLowerCase(), contains('wanderer'));
+      expect(card.headline, contains('さんぽ者'));
     });
 
     test('no evolution flag when staying within a stage', () {

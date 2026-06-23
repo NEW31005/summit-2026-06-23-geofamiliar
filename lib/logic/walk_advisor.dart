@@ -53,8 +53,8 @@ class WalkAdvisor {
     final weak = weakestTrait(dna);
     final place = placeForTrait(weak);
     final message =
-        'A little light on ${weak.label.toLowerCase()}. A ${place.label.toLowerCase()} '
-        'stop would round it out - only if it is already on your way.';
+        '${weak.label}が少なめです。もし今日のついでに寄れそうなら、'
+        '${place.label}を通ると相棒のバランスが少し整います。';
     return WalkSuggestion(weakest: weak, place: place, message: message);
   }
 
@@ -64,7 +64,6 @@ class WalkAdvisor {
     if (walk.isEmpty) return null;
     final lead = walk.lead;
     final mood = DnaEngine.moodForTrait(lead);
-    return 'This route leans ${lead.label.toLowerCase()} - '
-        'your companion will feel $mood.';
+    return 'このさんぽは「${lead.label}」寄りです。相棒は$mood気分になります。';
   }
 }

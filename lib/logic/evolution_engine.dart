@@ -47,8 +47,8 @@ class EvolutionEngine {
     final top = weekDna.sum > 0 ? weekDna.dominant : DnaTrait.calm;
 
     final headline = evolved
-        ? 'Your companion became a ${stageAfter.label}!'
-        : 'A week of ${top.label.toLowerCase()} places';
+        ? '相棒が「${stageAfter.label}」になりました'
+        : '${top.label}が濃い一週間';
 
     final summary = _summary(top, evolved, stageAfter, walksThisWeek);
 
@@ -71,16 +71,16 @@ class EvolutionEngine {
     int walks,
   ) {
     final lead = {
-      DnaTrait.vitality: 'bright, busy places kept it lively',
-      DnaTrait.calm: 'quiet, open places kept it settled',
-      DnaTrait.curiosity: 'new corners kept it wondering',
-      DnaTrait.warmth: 'familiar, cosy places kept it tender',
-      DnaTrait.focus: 'ordered routines kept it clear',
-      DnaTrait.wonder: 'dusk and lights kept it dreamy',
+      DnaTrait.vitality: '明るくにぎやかな場所が、相棒を元気にしました',
+      DnaTrait.calm: '静かでひらけた場所が、相棒を落ち着かせました',
+      DnaTrait.curiosity: '新しい角や発見が、相棒をきょろきょろさせました',
+      DnaTrait.warmth: '見慣れたあたたかい場所が、相棒をやさしくしました',
+      DnaTrait.focus: '整った用事や道すじが、相棒をすっきりさせました',
+      DnaTrait.wonder: '夕暮れや明かりが、相棒に夢みたいな余韻を残しました',
     }[top]!;
     final tail = evolved
-        ? 'It grew into a ${stage.label.toLowerCase()} this week.'
-        : 'It is still settling into who it is becoming.';
-    return 'Across $walks walks, $lead. $tail';
+        ? '今週、「${stage.label}」まで成長しました。'
+        : 'どんな相棒になるか、まだゆっくり形を作っています。';
+    return '$walks回のさんぽで、$lead。$tail';
   }
 }

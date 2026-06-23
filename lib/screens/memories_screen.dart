@@ -19,9 +19,8 @@ class MemoriesScreen extends StatelessWidget {
     if (memories.isEmpty) {
       return EmptyState(
         icon: Icons.auto_stories_rounded,
-        title: 'No memories yet',
-        message:
-            'Finish a walk and your companion will write its first diary line here.',
+        title: 'まだ記憶がありません',
+        message: 'さんぽを記録すると、相棒がここに最初の日記を書きます。',
       );
     }
 
@@ -35,18 +34,19 @@ class MemoriesScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Memories',
-                      style: Theme.of(context).textTheme.headlineMedium),
+                  Text('記憶', style: Theme.of(context).textTheme.headlineMedium),
                   const SizedBox(height: 4),
                   Text(
-                    '${memories.length} diary line${memories.length == 1 ? '' : 's'} from your places',
+                    '${memories.length}件の記憶が、あなたの場所から生まれました',
                     style: const TextStyle(
-                        fontSize: 13, color: AppColors.inkMuted),
+                      fontSize: 13,
+                      color: AppColors.inkMuted,
+                    ),
                   ),
                 ],
               ),
             ),
-            if (state.isPremium) const PremiumBadge(label: 'Album'),
+            if (state.isPremium) const PremiumBadge(label: 'アルバム'),
           ],
         ),
         const SizedBox(height: 18),
@@ -72,13 +72,20 @@ class MemoriesScreen extends StatelessWidget {
       ),
       child: Row(
         children: [
-          const Icon(Icons.photo_album_rounded,
-              size: 20, color: AppColors.coralDeep),
+          const Icon(
+            Icons.photo_album_rounded,
+            size: 20,
+            color: AppColors.coralDeep,
+          ),
           const SizedBox(width: 10),
           const Expanded(
             child: Text(
-              'Premium turns these into an exportable monthly album with voice-style lines.',
-              style: TextStyle(fontSize: 12.5, height: 1.3, color: AppColors.inkSoft),
+              'プレミアムでは、記憶を月ごとのアルバムとして書き出せます。相棒の声色も少し濃くなります。',
+              style: TextStyle(
+                fontSize: 12.5,
+                height: 1.3,
+                color: AppColors.inkSoft,
+              ),
             ),
           ),
         ],
@@ -109,7 +116,9 @@ class _MemoryTile extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             decoration: BoxDecoration(
               color: lead.color.withValues(alpha: 0.12),
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(20),
+              ),
             ),
             child: Row(
               children: [
@@ -127,20 +136,25 @@ class _MemoryTile extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(memory.title,
-                          style: const TextStyle(
-                              fontSize: 14.5,
-                              fontWeight: FontWeight.w800,
-                              color: AppColors.ink)),
+                      Text(
+                        memory.title,
+                        style: const TextStyle(
+                          fontSize: 14.5,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.ink,
+                        ),
+                      ),
                       Text(
                         '${memory.dayLabel}  -  ${memory.time.label}  -  ${memory.weather.label}',
                         style: const TextStyle(
-                            fontSize: 11.5, color: AppColors.inkMuted),
+                          fontSize: 11.5,
+                          color: AppColors.inkMuted,
+                        ),
                       ),
                     ],
                   ),
                 ),
-                if (memory.premium) const PremiumBadge(label: 'Voice'),
+                if (memory.premium) const PremiumBadge(label: '声色'),
               ],
             ),
           ),
@@ -149,39 +163,47 @@ class _MemoryTile extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('"${memory.diary}"',
-                    style: const TextStyle(
-                        fontSize: 14,
-                        height: 1.45,
-                        fontStyle: FontStyle.italic,
-                        color: AppColors.ink)),
+                Text(
+                  '"${memory.diary}"',
+                  style: const TextStyle(
+                    fontSize: 14,
+                    height: 1.45,
+                    fontStyle: FontStyle.italic,
+                    color: AppColors.ink,
+                  ),
+                ),
                 const SizedBox(height: 12),
                 Wrap(
                   spacing: 6,
                   runSpacing: 6,
                   children: [
                     DnaChip(trait: lead, dense: true),
-                    ..._uniquePlaces(memory).map((p) => Container(
-                          height: 30,
-                          padding: const EdgeInsets.symmetric(horizontal: 10),
-                          decoration: BoxDecoration(
-                            color: AppColors.surfaceAlt,
-                            borderRadius: BorderRadius.circular(13),
-                            border: Border.all(color: AppColors.hairline),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(p.icon, size: 13, color: AppColors.inkMuted),
-                              const SizedBox(width: 5),
-                              Text(p.label,
-                                  style: const TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w600,
-                                      color: AppColors.inkSoft)),
-                            ],
-                          ),
-                        )),
+                    ..._uniquePlaces(memory).map(
+                      (p) => Container(
+                        height: 30,
+                        padding: const EdgeInsets.symmetric(horizontal: 10),
+                        decoration: BoxDecoration(
+                          color: AppColors.surfaceAlt,
+                          borderRadius: BorderRadius.circular(13),
+                          border: Border.all(color: AppColors.hairline),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(p.icon, size: 13, color: AppColors.inkMuted),
+                            const SizedBox(width: 5),
+                            Text(
+                              p.label,
+                              style: const TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.inkSoft,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ],

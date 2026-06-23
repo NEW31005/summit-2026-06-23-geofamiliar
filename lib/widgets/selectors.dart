@@ -33,7 +33,9 @@ class PlaceTile extends StatelessWidget {
           duration: const Duration(milliseconds: 180),
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: selected ? accent.withValues(alpha: 0.12) : AppColors.surface,
+            color: selected
+                ? accent.withValues(alpha: 0.12)
+                : AppColors.surface,
             borderRadius: BorderRadius.circular(18),
             border: Border.all(
               color: selected ? accent : AppColors.hairline,
@@ -122,7 +124,9 @@ class ChoicePills<T> extends StatelessWidget {
             height: 38,
             padding: const EdgeInsets.symmetric(horizontal: 12),
             decoration: BoxDecoration(
-              color: isSel ? accent.withValues(alpha: 0.14) : AppColors.surfaceAlt,
+              color: isSel
+                  ? accent.withValues(alpha: 0.14)
+                  : AppColors.surfaceAlt,
               borderRadius: BorderRadius.circular(13),
               border: Border.all(
                 color: isSel ? accent : AppColors.hairline,
@@ -132,16 +136,20 @@ class ChoicePills<T> extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(iconOf(item),
-                    size: 16,
-                    color: isSel ? accent : AppColors.inkMuted),
+                Icon(
+                  iconOf(item),
+                  size: 16,
+                  color: isSel ? accent : AppColors.inkMuted,
+                ),
                 const SizedBox(width: 6),
                 Text(
                   labelOf(item),
                   style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
-                    color: isSel ? Color.lerp(accent, AppColors.ink, 0.4) : AppColors.inkSoft,
+                    color: isSel
+                        ? Color.lerp(accent, AppColors.ink, 0.4)
+                        : AppColors.inkSoft,
                   ),
                 ),
               ],

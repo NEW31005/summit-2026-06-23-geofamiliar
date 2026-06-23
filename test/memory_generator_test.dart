@@ -6,7 +6,11 @@ import 'package:geofamiliar/models/memory_card.dart';
 import 'package:geofamiliar/models/walk.dart';
 
 Walk _walk(List<PlaceType> places, TimeContext time, WeatherContext weather) =>
-    Walk(stops: places.map(RouteStop.new).toList(), time: time, weather: weather);
+    Walk(
+      stops: places.map(RouteStop.new).toList(),
+      time: time,
+      weather: weather,
+    );
 
 void main() {
   group('MemoryGenerator', () {
@@ -43,22 +47,33 @@ void main() {
       final memory = MemoryGenerator.generate(walk, seed: 2, dayIndex: 3);
       expect(memory.diary.contains('{'), isFalse);
       expect(memory.diary, isNotEmpty);
-      expect(memory.dayLabel, 'Day 3');
+      expect(memory.dayLabel, '3日目');
       expect(memory.places.length, 2);
     });
 
     test('premium memories add a voice-style flourish', () {
-      final walk = _walk([PlaceType.cafe], TimeContext.sunset, WeatherContext.humid);
+      final walk = _walk(
+        [PlaceType.cafe],
+        TimeContext.sunset,
+        WeatherContext.humid,
+      );
       final free = MemoryGenerator.generate(walk, seed: 0, dayIndex: 1);
-      final premium =
-          MemoryGenerator.generate(walk, seed: 0, dayIndex: 1, premium: true);
+      final premium = MemoryGenerator.generate(
+        walk,
+        seed: 0,
+        dayIndex: 1,
+        premium: true,
+      );
       expect(premium.premium, isTrue);
       expect(premium.diary.length, greaterThan(free.diary.length));
     });
 
     test('round-trips through JSON', () {
-      final walk =
-          _walk([PlaceType.nightStore], TimeContext.night, WeatherContext.cloudy);
+      final walk = _walk(
+        [PlaceType.nightStore],
+        TimeContext.night,
+        WeatherContext.cloudy,
+      );
       final memory = MemoryGenerator.generate(walk, seed: 5, dayIndex: 7);
       final restored = MemoryCard.fromJson(memory.toJson());
       expect(restored.diary, memory.diary);

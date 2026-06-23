@@ -35,11 +35,15 @@ class EvolutionScreen extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 28),
       children: [
-        Text('Evolution', style: Theme.of(context).textTheme.headlineMedium),
+        Text('進化', style: Theme.of(context).textTheme.headlineMedium),
         const SizedBox(height: 4),
         const Text(
-          'Each week of walks becomes a collectible card showing how your companion grew.',
-          style: TextStyle(fontSize: 13, color: AppColors.inkMuted, height: 1.35),
+          '一週間のさんぽは、相棒がどう育ったかを残す進化カードになります。',
+          style: TextStyle(
+            fontSize: 13,
+            color: AppColors.inkMuted,
+            height: 1.35,
+          ),
         ),
         const SizedBox(height: 18),
 
@@ -55,27 +59,34 @@ class EvolutionScreen extends StatelessWidget {
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: ready
-                  ? [AppColors.amber.withValues(alpha: 0.18), AppColors.coral.withValues(alpha: 0.12)]
+                  ? [
+                      AppColors.amber.withValues(alpha: 0.18),
+                      AppColors.coral.withValues(alpha: 0.12),
+                    ]
                   : [AppColors.mint.withValues(alpha: 0.12), AppColors.surface],
             ),
             border: Border.all(
-                color: ready ? AppColors.amber : AppColors.hairline,
-                width: ready ? 1.6 : 1),
+              color: ready ? AppColors.amber : AppColors.hairline,
+              width: ready ? 1.6 : 1,
+            ),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
                 children: [
-                  Text('Week ${companion.week}',
-                      style: Theme.of(context).textTheme.titleLarge),
+                  Text(
+                    '${companion.week}週目',
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
                   const Spacer(),
                   Text(
-                    '${companion.walksThisWeek}/${EvolutionEngine.walksPerWeek} walks',
+                    '${companion.walksThisWeek}/${EvolutionEngine.walksPerWeek}回',
                     style: const TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.inkMuted),
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.inkMuted,
+                    ),
                   ),
                 ],
               ),
@@ -95,7 +106,8 @@ class EvolutionScreen extends StatelessWidget {
                         height: 12,
                         decoration: BoxDecoration(
                           gradient: const LinearGradient(
-                              colors: [AppColors.mint, AppColors.amber]),
+                            colors: [AppColors.mint, AppColors.amber],
+                          ),
                           borderRadius: BorderRadius.circular(8),
                         ),
                       ),
@@ -108,7 +120,7 @@ class EvolutionScreen extends StatelessWidget {
                 FilledButton.icon(
                   onPressed: () => _claim(context),
                   icon: const Icon(Icons.celebration_rounded),
-                  label: const Text('Claim this week\'s evolution'),
+                  label: const Text('今週の進化カードを受け取る'),
                   style: FilledButton.styleFrom(
                     backgroundColor: AppColors.coralDeep,
                     foregroundColor: Colors.white,
@@ -116,9 +128,12 @@ class EvolutionScreen extends StatelessWidget {
                 )
               else
                 Text(
-                  'Walk ${state.walksRemaining} more time${state.walksRemaining == 1 ? '' : 's'} to unlock this week\'s evolution card.',
+                  'あと${state.walksRemaining}回さんぽを記録すると、今週の進化カードを受け取れます。',
                   style: const TextStyle(
-                      fontSize: 13, height: 1.35, color: AppColors.inkSoft),
+                    fontSize: 13,
+                    height: 1.35,
+                    color: AppColors.inkSoft,
+                  ),
                 ),
             ],
           ),
@@ -126,13 +141,16 @@ class EvolutionScreen extends StatelessWidget {
         const SizedBox(height: 22),
 
         SectionHeader(
-          eyebrow: 'Collection',
-          title: 'Weekly cards',
-          trailing: Text('${cards.length}',
-              style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w800,
-                  color: AppColors.inkMuted)),
+          eyebrow: 'コレクション',
+          title: '進化カード',
+          trailing: Text(
+            '${cards.length}',
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w800,
+              color: AppColors.inkMuted,
+            ),
+          ),
         ),
         const SizedBox(height: 12),
         if (cards.isEmpty)
@@ -147,15 +165,20 @@ class EvolutionScreen extends StatelessWidget {
               children: [
                 Icon(Icons.style_rounded, size: 28, color: AppColors.inkMuted),
                 SizedBox(height: 8),
-                Text('No weekly cards yet',
-                    style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.inkSoft)),
+                Text(
+                  'まだ進化カードがありません',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.inkSoft,
+                  ),
+                ),
                 SizedBox(height: 2),
-                Text('Finish a week of walks to earn your first card',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 12.5, color: AppColors.inkMuted)),
+                Text(
+                  '一週間分のさんぽを記録すると、最初のカードを受け取れます',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 12.5, color: AppColors.inkMuted),
+                ),
               ],
             ),
           )
@@ -172,7 +195,9 @@ class EvolutionScreen extends StatelessWidget {
   }
 
   Widget _stageRoadmap(BuildContext context, EvolutionStage current) {
-    final stages = EvolutionStage.values.where((s) => s != EvolutionStage.egg).toList();
+    final stages = EvolutionStage.values
+        .where((s) => s != EvolutionStage.egg)
+        .toList();
     return SizedBox(
       height: 84,
       child: Row(
@@ -195,25 +220,31 @@ class EvolutionScreen extends StatelessWidget {
                               : AppColors.surfaceAlt,
                           shape: BoxShape.circle,
                           border: Border.all(
-                            color: isCurrent ? AppColors.amber : AppColors.hairline,
+                            color: isCurrent
+                                ? AppColors.amber
+                                : AppColors.hairline,
                             width: isCurrent ? 2.5 : 1,
                           ),
                         ),
                         child: Icon(
-                          reached ? Icons.eco_rounded : Icons.lock_outline_rounded,
+                          reached
+                              ? Icons.eco_rounded
+                              : Icons.lock_outline_rounded,
                           size: 18,
                           color: reached ? Colors.white : AppColors.inkMuted,
                         ),
                       ),
                       const SizedBox(height: 6),
-                      Text(s.label,
-                          style: TextStyle(
-                              fontSize: 10.5,
-                              fontWeight:
-                                  isCurrent ? FontWeight.w800 : FontWeight.w600,
-                              color: isCurrent
-                                  ? AppColors.ink
-                                  : AppColors.inkMuted)),
+                      Text(
+                        s.label,
+                        style: TextStyle(
+                          fontSize: 10.5,
+                          fontWeight: isCurrent
+                              ? FontWeight.w800
+                              : FontWeight.w600,
+                          color: isCurrent ? AppColors.ink : AppColors.inkMuted,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -252,23 +283,33 @@ class EvolutionScreen extends StatelessWidget {
                 color: AppColors.violet.withValues(alpha: 0.3),
                 borderRadius: BorderRadius.circular(14),
               ),
-              child: const Icon(Icons.family_restroom_rounded,
-                  color: Colors.white),
+              child: const Icon(
+                Icons.family_restroom_rounded,
+                color: Colors.white,
+              ),
             ),
             const SizedBox(width: 12),
             const Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Legacy & inheritance',
-                      style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w800,
-                          color: Colors.white)),
+                  Text(
+                    '継承',
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w800,
+                      color: Colors.white,
+                    ),
+                  ),
                   SizedBox(height: 2),
                   Text(
-                      'A Luminary can pass its traits and memories to a new companion. Premium.',
-                      style: TextStyle(fontSize: 12, color: Colors.white70, height: 1.3)),
+                    '育ちきった相棒の性格と記憶を、次の相棒へ引き継げます。プレミアム機能です。',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.white70,
+                      height: 1.3,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -304,30 +345,42 @@ class WeeklyCardView extends StatelessWidget {
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
                 decoration: BoxDecoration(
                   color: card.topTrait.color.withValues(alpha: 0.25),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: Text('WEEK ${card.week}',
-                    style: const TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w800,
-                        color: Colors.white,
-                        letterSpacing: 1)),
+                child: Text(
+                  '${card.week}週目',
+                  style: const TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.white,
+                    letterSpacing: 1,
+                  ),
+                ),
               ),
               const Spacer(),
               if (card.evolved)
                 const Row(
                   children: [
-                    Icon(Icons.auto_awesome_rounded,
-                        size: 14, color: AppColors.amber),
+                    Icon(
+                      Icons.auto_awesome_rounded,
+                      size: 14,
+                      color: AppColors.amber,
+                    ),
                     SizedBox(width: 4),
-                    Text('Evolved',
-                        style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w800,
-                            color: AppColors.amber)),
+                    Text(
+                      '進化',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.amber,
+                      ),
+                    ),
                   ],
                 ),
             ],
@@ -342,43 +395,57 @@ class WeeklyCardView extends StatelessWidget {
                   color: card.topTrait.color.withValues(alpha: 0.22),
                   borderRadius: BorderRadius.circular(14),
                 ),
-                child: Icon(card.topTrait.icon,
-                    color: card.topTrait.color, size: 24),
+                child: Icon(
+                  card.topTrait.icon,
+                  color: card.topTrait.color,
+                  size: 24,
+                ),
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(card.headline,
-                        style: const TextStyle(
-                            fontSize: 15.5,
-                            fontWeight: FontWeight.w800,
-                            color: Colors.white,
-                            height: 1.25)),
+                    Text(
+                      card.headline,
+                      style: const TextStyle(
+                        fontSize: 15.5,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.white,
+                        height: 1.25,
+                      ),
+                    ),
                     const SizedBox(height: 2),
-                    Text(card.stage.label,
-                        style: const TextStyle(
-                            fontSize: 12.5,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white60)),
+                    Text(
+                      card.stage.label,
+                      style: const TextStyle(
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white60,
+                      ),
+                    ),
                   ],
                 ),
               ),
             ],
           ),
           const SizedBox(height: 12),
-          Text(card.summary,
-              style: const TextStyle(
-                  fontSize: 13, height: 1.4, color: Colors.white70)),
+          Text(
+            card.summary,
+            style: const TextStyle(
+              fontSize: 13,
+              height: 1.4,
+              color: Colors.white70,
+            ),
+          ),
           const SizedBox(height: 14),
           Row(
             children: [
-              _stat('${card.walks}', 'walks'),
+              _stat('${card.walks}', 'さんぽ'),
               const SizedBox(width: 18),
-              _stat('${card.memories}', 'memories'),
+              _stat('${card.memories}', '記憶'),
               const SizedBox(width: 18),
-              _stat(card.topTrait.label, 'top trait'),
+              _stat(card.topTrait.label, '強いDNA'),
             ],
           ),
         ],
@@ -390,13 +457,18 @@ class WeeklyCardView extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(value,
-            style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w800,
-                color: Colors.white)),
-        Text(label,
-            style: const TextStyle(fontSize: 11, color: Colors.white54)),
+        Text(
+          value,
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w800,
+            color: Colors.white,
+          ),
+        ),
+        Text(
+          label,
+          style: const TextStyle(fontSize: 11, color: Colors.white54),
+        ),
       ],
     );
   }
@@ -427,9 +499,11 @@ class _EvolutionSheet extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 18),
-          Text(card.evolved ? 'Your companion evolved!' : 'Week complete!',
-              style: Theme.of(context).textTheme.headlineMedium,
-              textAlign: TextAlign.center),
+          Text(
+            card.evolved ? '相棒が進化しました' : '一週間がまとまりました',
+            style: Theme.of(context).textTheme.headlineMedium,
+            textAlign: TextAlign.center,
+          ),
           const SizedBox(height: 16),
           WeeklyCardView(card: card),
           const SizedBox(height: 8),
@@ -437,7 +511,7 @@ class _EvolutionSheet extends StatelessWidget {
             const Padding(
               padding: EdgeInsets.symmetric(vertical: 8),
               child: Text(
-                'Keep walking your places - the next stage is on its way.',
+                'いつもの場所を記録していくと、次の段階に近づきます。',
                 textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 12.5, color: AppColors.inkMuted),
               ),
@@ -449,7 +523,7 @@ class _EvolutionSheet extends StatelessWidget {
               backgroundColor: AppColors.mintDeep,
               foregroundColor: Colors.white,
             ),
-            child: const Text('Add to collection'),
+            child: const Text('コレクションに追加'),
           ),
         ],
       ),

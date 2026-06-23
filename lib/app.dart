@@ -19,7 +19,7 @@ class GeoFamiliarApp extends StatelessWidget {
     return AppScope(
       state: state,
       child: MaterialApp(
-        title: 'GeoFamiliar',
+        title: 'GeoFamiliar 生活圏の相棒',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.light(),
         home: const _RootGate(),

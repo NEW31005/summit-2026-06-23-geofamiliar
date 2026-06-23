@@ -36,28 +36,28 @@ class MemoryCard {
   IconData get icon => places.isNotEmpty ? places.first.icon : lead.icon;
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'title': title,
-        'diary': diary,
-        'lead': lead.name,
-        'places': places.map((p) => p.name).toList(),
-        'time': time.name,
-        'weather': weather.name,
-        'dayLabel': dayLabel,
-        'premium': premium,
-      };
+    'id': id,
+    'title': title,
+    'diary': diary,
+    'lead': lead.name,
+    'places': places.map((p) => p.name).toList(),
+    'time': time.name,
+    'weather': weather.name,
+    'dayLabel': dayLabel,
+    'premium': premium,
+  };
 
   factory MemoryCard.fromJson(Map<String, dynamic> json) => MemoryCard(
-        id: json['id'] as String,
-        title: json['title'] as String,
-        diary: json['diary'] as String,
-        lead: DnaTrait.fromName(json['lead'] as String),
-        places: (json['places'] as List)
-            .map((p) => PlaceType.fromName(p as String))
-            .toList(),
-        time: TimeContext.fromName(json['time'] as String),
-        weather: WeatherContext.fromName(json['weather'] as String),
-        dayLabel: json['dayLabel'] as String,
-        premium: json['premium'] as bool? ?? false,
-      );
+    id: json['id'] as String,
+    title: json['title'] as String,
+    diary: json['diary'] as String,
+    lead: DnaTrait.fromName(json['lead'] as String),
+    places: (json['places'] as List)
+        .map((p) => PlaceType.fromName(p as String))
+        .toList(),
+    time: TimeContext.fromName(json['time'] as String),
+    weather: WeatherContext.fromName(json['weather'] as String),
+    dayLabel: json['dayLabel'] as String,
+    premium: json['premium'] as bool? ?? false,
+  );
 }

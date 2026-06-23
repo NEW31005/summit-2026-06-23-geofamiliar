@@ -170,7 +170,11 @@ class _CompanionPainter extends CustomPainter {
     _paintEar(canvas, center, bodyW, bodyH, 1, earGrow);
 
     // Body (rounded blob with vertical gradient).
-    final bodyRect = Rect.fromCenter(center: center, width: bodyW, height: bodyH);
+    final bodyRect = Rect.fromCenter(
+      center: center,
+      width: bodyW,
+      height: bodyH,
+    );
     final bodyPaint = Paint()
       ..shader = LinearGradient(
         begin: Alignment.topCenter,
@@ -182,7 +186,9 @@ class _CompanionPainter extends CustomPainter {
         ],
       ).createShader(bodyRect);
     final bodyPath = Path()
-      ..addRRect(RRect.fromRectAndRadius(bodyRect, Radius.circular(bodyW * 0.5)));
+      ..addRRect(
+        RRect.fromRectAndRadius(bodyRect, Radius.circular(bodyW * 0.5)),
+      );
     canvas.drawPath(bodyPath, bodyPaint);
 
     // DNA-dependent dappling: faint trait-coloured patches over the body.
@@ -203,8 +209,16 @@ class _CompanionPainter extends CustomPainter {
     // Cheeks.
     final cheekPaint = Paint()..color = secondary.withValues(alpha: 0.55);
     final cheekY = center.dy + bodyH * 0.04;
-    canvas.drawCircle(Offset(center.dx - bodyW * 0.26, cheekY), bodyW * 0.07, cheekPaint);
-    canvas.drawCircle(Offset(center.dx + bodyW * 0.26, cheekY), bodyW * 0.07, cheekPaint);
+    canvas.drawCircle(
+      Offset(center.dx - bodyW * 0.26, cheekY),
+      bodyW * 0.07,
+      cheekPaint,
+    );
+    canvas.drawCircle(
+      Offset(center.dx + bodyW * 0.26, cheekY),
+      bodyW * 0.07,
+      cheekPaint,
+    );
 
     // Collar / scarf (kindred+).
     if (stageRing >= 3) _paintCollar(canvas, center, bodyW, bodyH);
@@ -220,7 +234,12 @@ class _CompanionPainter extends CustomPainter {
   }
 
   void _paintEgg(
-      Canvas canvas, Size size, Offset center, double bodyW, double bodyH) {
+    Canvas canvas,
+    Size size,
+    Offset center,
+    double bodyW,
+    double bodyH,
+  ) {
     final eggRect = Rect.fromCenter(
       center: center,
       width: bodyW * 1.05,
@@ -233,21 +252,34 @@ class _CompanionPainter extends CustomPainter {
         colors: [Colors.white, const Color(0xFFEFF5F2)],
       ).createShader(eggRect);
     final path = Path()
-      ..addRRect(RRect.fromRectAndCorners(
-        eggRect,
-        topLeft: Radius.circular(bodyW * 0.5),
-        topRight: Radius.circular(bodyW * 0.5),
-        bottomLeft: Radius.circular(bodyW * 0.42),
-        bottomRight: Radius.circular(bodyW * 0.42),
-      ));
+      ..addRRect(
+        RRect.fromRectAndCorners(
+          eggRect,
+          topLeft: Radius.circular(bodyW * 0.5),
+          topRight: Radius.circular(bodyW * 0.5),
+          bottomLeft: Radius.circular(bodyW * 0.42),
+          bottomRight: Radius.circular(bodyW * 0.42),
+        ),
+      );
     canvas.drawPath(path, eggPaint);
 
     // Trait-tinted shell spots hint at the DNA waiting inside.
     final spot = Paint()..color = secondary.withValues(alpha: 0.5);
-    canvas.drawCircle(center.translate(-bodyW * 0.18, -bodyH * 0.1), bodyW * 0.06, spot);
-    canvas.drawCircle(center.translate(bodyW * 0.16, bodyH * 0.12), bodyW * 0.05, spot);
-    canvas.drawCircle(center.translate(bodyW * 0.05, -bodyH * 0.28), bodyW * 0.04,
-        Paint()..color = primary.withValues(alpha: 0.5));
+    canvas.drawCircle(
+      center.translate(-bodyW * 0.18, -bodyH * 0.1),
+      bodyW * 0.06,
+      spot,
+    );
+    canvas.drawCircle(
+      center.translate(bodyW * 0.16, bodyH * 0.12),
+      bodyW * 0.05,
+      spot,
+    );
+    canvas.drawCircle(
+      center.translate(bodyW * 0.05, -bodyH * 0.28),
+      bodyW * 0.04,
+      Paint()..color = primary.withValues(alpha: 0.5),
+    );
 
     // Gentle pulse outline.
     final glow = 0.5 + 0.5 * math.sin(phase * 2 * math.pi);
@@ -260,11 +292,22 @@ class _CompanionPainter extends CustomPainter {
     );
   }
 
-  void _paintEar(Canvas canvas, Offset center, double bodyW, double bodyH,
-      int side, double grow) {
-    final base = Offset(center.dx + side * bodyW * 0.22, center.dy - bodyH * 0.46);
+  void _paintEar(
+    Canvas canvas,
+    Offset center,
+    double bodyW,
+    double bodyH,
+    int side,
+    double grow,
+  ) {
+    final base = Offset(
+      center.dx + side * bodyW * 0.22,
+      center.dy - bodyH * 0.46,
+    );
     final tip = Offset(
-        base.dx + side * bodyW * 0.12, base.dy - bodyH * 0.28 * grow);
+      base.dx + side * bodyW * 0.12,
+      base.dy - bodyH * 0.28 * grow,
+    );
     canvas.drawLine(
       base,
       tip,
@@ -278,7 +321,12 @@ class _CompanionPainter extends CustomPainter {
 
   /// Faint trait-coloured patches over the body so two companions with different
   /// DNA never look identical even at the same dominant colour.
-  void _paintDappling(Canvas canvas, Offset center, double bodyW, double bodyH) {
+  void _paintDappling(
+    Canvas canvas,
+    Offset center,
+    double bodyW,
+    double bodyH,
+  ) {
     final rnd = math.Random(seed * 31 + primaryTrait.index);
     final patch = Paint()..color = secondary.withValues(alpha: 0.18);
     final count = 3 + (seed % 3);
@@ -319,8 +367,14 @@ class _CompanionPainter extends CustomPainter {
         for (int row = 0; row < 2; row++) {
           final y = c.dy - s * 0.35 + row * s * 0.7;
           final p = Path()..moveTo(c.dx - s, y);
-          p.cubicTo(c.dx - s * 0.4, y - s * 0.5, c.dx + s * 0.4, y + s * 0.5,
-              c.dx + s, y);
+          p.cubicTo(
+            c.dx - s * 0.4,
+            y - s * 0.5,
+            c.dx + s * 0.4,
+            y + s * 0.5,
+            c.dx + s,
+            y,
+          );
           canvas.drawPath(p, stroke);
         }
         break;
@@ -337,10 +391,22 @@ class _CompanionPainter extends CustomPainter {
         // Heart.
         final p = Path()
           ..moveTo(c.dx, c.dy + s * 0.8)
-          ..cubicTo(c.dx - s * 1.4, c.dy - s * 0.2, c.dx - s * 0.2,
-              c.dy - s * 0.9, c.dx, c.dy - s * 0.25)
-          ..cubicTo(c.dx + s * 0.2, c.dy - s * 0.9, c.dx + s * 1.4,
-              c.dy - s * 0.2, c.dx, c.dy + s * 0.8);
+          ..cubicTo(
+            c.dx - s * 1.4,
+            c.dy - s * 0.2,
+            c.dx - s * 0.2,
+            c.dy - s * 0.9,
+            c.dx,
+            c.dy - s * 0.25,
+          )
+          ..cubicTo(
+            c.dx + s * 0.2,
+            c.dy - s * 0.9,
+            c.dx + s * 1.4,
+            c.dy - s * 0.2,
+            c.dx,
+            c.dy + s * 0.8,
+          );
         canvas.drawPath(p, fill);
         break;
       case DnaTrait.focus:
@@ -374,16 +440,18 @@ class _CompanionPainter extends CustomPainter {
     final leaf = Paint()..color = const Color(0xFF4DD0B1);
     canvas.drawOval(
       Rect.fromCenter(
-          center: stemTop.translate(-bodyW * 0.05, 0),
-          width: bodyW * 0.12,
-          height: bodyW * 0.07),
+        center: stemTop.translate(-bodyW * 0.05, 0),
+        width: bodyW * 0.12,
+        height: bodyW * 0.07,
+      ),
       leaf,
     );
     canvas.drawOval(
       Rect.fromCenter(
-          center: stemTop.translate(bodyW * 0.05, -bodyH * 0.02),
-          width: bodyW * 0.12,
-          height: bodyW * 0.07),
+        center: stemTop.translate(bodyW * 0.05, -bodyH * 0.02),
+        width: bodyW * 0.12,
+        height: bodyW * 0.07,
+      ),
       leaf,
     );
   }
@@ -391,14 +459,21 @@ class _CompanionPainter extends CustomPainter {
   void _paintCollar(Canvas canvas, Offset center, double bodyW, double bodyH) {
     final y = center.dy + bodyH * 0.30;
     final rect = Rect.fromCenter(
-        center: Offset(center.dx, y), width: bodyW * 0.66, height: bodyH * 0.10);
+      center: Offset(center.dx, y),
+      width: bodyW * 0.66,
+      height: bodyH * 0.10,
+    );
     canvas.drawRRect(
       RRect.fromRectAndRadius(rect, Radius.circular(bodyH * 0.05)),
-      Paint()..color = Color.lerp(secondary, _ink, 0.1)!.withValues(alpha: 0.85),
+      Paint()
+        ..color = Color.lerp(secondary, _ink, 0.1)!.withValues(alpha: 0.85),
     );
     // Little tag.
     canvas.drawCircle(
-        Offset(center.dx, y + bodyH * 0.02), bodyW * 0.03, Paint()..color = primary);
+      Offset(center.dx, y + bodyH * 0.02),
+      bodyW * 0.03,
+      Paint()..color = primary,
+    );
   }
 
   void _paintCrown(Canvas canvas, Offset center, double bodyW, double bodyH) {
@@ -421,8 +496,8 @@ class _CompanionPainter extends CustomPainter {
     final whitePaint = Paint()..color = Colors.white;
     final pupilPaint = Paint()..color = _ink;
 
-    final happy = mood == 'Cosy' || mood == 'Buzzing' || mood == 'Settled';
-    final dreamy = mood == 'Dreamy';
+    final happy = mood == 'ぬくぬく' || mood == 'そわそわ' || mood == 'ほっとしている';
+    final dreamy = mood == 'うっとり';
 
     for (final side in [-1, 1]) {
       final eyeC = Offset(center.dx + side * eyeDx, eyeY);
@@ -434,14 +509,25 @@ class _CompanionPainter extends CustomPainter {
           ..color = _ink;
         final path = Path()
           ..moveTo(eyeC.dx - eyeR, eyeC.dy)
-          ..quadraticBezierTo(eyeC.dx, eyeC.dy + eyeR * 0.9, eyeC.dx + eyeR, eyeC.dy);
+          ..quadraticBezierTo(
+            eyeC.dx,
+            eyeC.dy + eyeR * 0.9,
+            eyeC.dx + eyeR,
+            eyeC.dy,
+          );
         canvas.drawPath(path, p);
       } else {
         canvas.drawCircle(eyeC, eyeR, whitePaint);
-        canvas.drawCircle(eyeC.translate(side * eyeR * 0.15, eyeR * 0.12),
-            eyeR * 0.55, pupilPaint);
-        canvas.drawCircle(eyeC.translate(-eyeR * 0.2, -eyeR * 0.25),
-            eyeR * 0.22, Paint()..color = Colors.white);
+        canvas.drawCircle(
+          eyeC.translate(side * eyeR * 0.15, eyeR * 0.12),
+          eyeR * 0.55,
+          pupilPaint,
+        );
+        canvas.drawCircle(
+          eyeC.translate(-eyeR * 0.2, -eyeR * 0.25),
+          eyeR * 0.22,
+          Paint()..color = Colors.white,
+        );
       }
     }
 
@@ -457,12 +543,20 @@ class _CompanionPainter extends CustomPainter {
       mouth
         ..moveTo(center.dx - bodyW * 0.08, mouthY)
         ..quadraticBezierTo(
-            center.dx, mouthY + bodyH * 0.06, center.dx + bodyW * 0.08, mouthY);
+          center.dx,
+          mouthY + bodyH * 0.06,
+          center.dx + bodyW * 0.08,
+          mouthY,
+        );
     } else {
       mouth
         ..moveTo(center.dx - bodyW * 0.06, mouthY)
         ..quadraticBezierTo(
-            center.dx, mouthY + bodyH * 0.03, center.dx + bodyW * 0.06, mouthY);
+          center.dx,
+          mouthY + bodyH * 0.03,
+          center.dx + bodyW * 0.06,
+          mouthY,
+        );
     }
     canvas.drawPath(mouth, mouthPaint);
   }
@@ -487,8 +581,13 @@ class _CompanionPainter extends CustomPainter {
     }
   }
 
-  void _drawSparkStar(Canvas canvas, Offset c, double r, Paint paint,
-      {bool stroke = false}) {
+  void _drawSparkStar(
+    Canvas canvas,
+    Offset c,
+    double r,
+    Paint paint, {
+    bool stroke = false,
+  }) {
     if (stroke) {
       final path = Path();
       for (int i = 0; i < 4; i++) {
@@ -505,9 +604,14 @@ class _CompanionPainter extends CustomPainter {
       final a = i * math.pi / 2;
       final aNext = (i + 0.5) * math.pi / 2;
       if (i == 0) path.moveTo(c.dx + r, c.dy);
-      path.lineTo(c.dx + math.cos(aNext) * r * 0.36, c.dy + math.sin(aNext) * r * 0.36);
-      path.lineTo(c.dx + math.cos(a + math.pi / 2) * r,
-          c.dy + math.sin(a + math.pi / 2) * r);
+      path.lineTo(
+        c.dx + math.cos(aNext) * r * 0.36,
+        c.dy + math.sin(aNext) * r * 0.36,
+      );
+      path.lineTo(
+        c.dx + math.cos(a + math.pi / 2) * r,
+        c.dy + math.sin(a + math.pi / 2) * r,
+      );
     }
     path.close();
     canvas.drawPath(path, paint);

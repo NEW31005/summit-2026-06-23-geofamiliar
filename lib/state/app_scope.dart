@@ -6,11 +6,8 @@ import 'app_state.dart';
 /// descendant can read state and rebuild on change without a third-party
 /// state-management package.
 class AppScope extends InheritedNotifier<AppState> {
-  const AppScope({
-    super.key,
-    required AppState state,
-    required super.child,
-  }) : super(notifier: state);
+  const AppScope({super.key, required AppState state, required super.child})
+    : super(notifier: state);
 
   static AppState of(BuildContext context) {
     final scope = context.dependOnInheritedWidgetOfExactType<AppScope>();

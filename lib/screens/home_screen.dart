@@ -39,7 +39,7 @@ class HomeScreen extends StatelessWidget {
         FilledButton.icon(
           onPressed: () => onNavigate(1),
           icon: const Icon(Icons.directions_walk_rounded),
-          label: const Text("Start today's walk"),
+          label: const Text('今日のさんぽを記録'),
           style: FilledButton.styleFrom(
             backgroundColor: AppColors.coralDeep,
             foregroundColor: Colors.white,
@@ -52,7 +52,7 @@ class HomeScreen extends StatelessWidget {
               child: OutlinedButton.icon(
                 onPressed: () => onNavigate(2),
                 icon: const Icon(Icons.science_rounded, size: 18),
-                label: const Text('Life DNA'),
+                label: const Text('生活圏DNA'),
               ),
             ),
             const SizedBox(width: 10),
@@ -60,7 +60,7 @@ class HomeScreen extends StatelessWidget {
               child: OutlinedButton.icon(
                 onPressed: () => onNavigate(3),
                 icon: const Icon(Icons.auto_stories_rounded, size: 18),
-                label: const Text('Memories'),
+                label: const Text('記憶'),
               ),
             ),
           ],
@@ -68,13 +68,14 @@ class HomeScreen extends StatelessWidget {
         const SizedBox(height: 22),
 
         // Today's Life DNA
-        const SectionHeader(eyebrow: 'Today', title: "Life DNA so far"),
+        const SectionHeader(eyebrow: '今日', title: '今までの生活圏DNA'),
         const SizedBox(height: 12),
         Wrap(
           spacing: 8,
           runSpacing: 8,
-          children:
-              topTraits.map((t) => DnaChip(trait: t, value: dna.of(t))).toList(),
+          children: topTraits
+              .map((t) => DnaChip(trait: t, value: dna.of(t)))
+              .toList(),
         ),
         const SizedBox(height: 20),
 
@@ -87,7 +88,7 @@ class HomeScreen extends StatelessWidget {
             Expanded(
               child: StatPill(
                 value: '${companion.totalWalks}',
-                label: 'Walks lived',
+                label: 'さんぽ',
                 icon: Icons.directions_walk_rounded,
               ),
             ),
@@ -95,7 +96,7 @@ class HomeScreen extends StatelessWidget {
             Expanded(
               child: StatPill(
                 value: '${state.memories.length}',
-                label: 'Memories',
+                label: '記憶',
                 icon: Icons.auto_stories_rounded,
                 color: AppColors.coralDeep,
               ),
@@ -103,8 +104,8 @@ class HomeScreen extends StatelessWidget {
             const SizedBox(width: 10),
             Expanded(
               child: StatPill(
-                value: 'Wk ${companion.week}',
-                label: 'This week',
+                value: '週${companion.week}',
+                label: '今週',
                 icon: Icons.calendar_today_rounded,
                 color: AppColors.amber,
               ),
@@ -118,7 +119,6 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-
   Widget _topBar(BuildContext context, state) {
     return Row(
       children: [
@@ -126,10 +126,14 @@ class HomeScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('GeoFamiliar',
-                  style: Theme.of(context).textTheme.titleLarge),
-              const Text('Your living-area companion',
-                  style: TextStyle(fontSize: 12.5, color: AppColors.inkMuted)),
+              Text(
+                'GeoFamiliar',
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+              const Text(
+                '生活圏から生まれる相棒',
+                style: TextStyle(fontSize: 12.5, color: AppColors.inkMuted),
+              ),
             ],
           ),
         ),
@@ -138,9 +142,11 @@ class HomeScreen extends StatelessWidget {
         else
           IconButton(
             onPressed: onOpenPremium,
-            tooltip: 'Premium',
-            icon: const Icon(Icons.workspace_premium_rounded,
-                color: AppColors.amber),
+            tooltip: 'プレミアム',
+            icon: const Icon(
+              Icons.workspace_premium_rounded,
+              color: AppColors.amber,
+            ),
           ),
         _menu(context, state),
       ],
@@ -161,19 +167,27 @@ class HomeScreen extends StatelessWidget {
       itemBuilder: (_) => const [
         PopupMenuItem(
           value: 'rename',
-          child: Row(children: [
-            Icon(Icons.edit_rounded, size: 18, color: AppColors.inkSoft),
-            SizedBox(width: 10),
-            Text('Rename companion'),
-          ]),
+          child: Row(
+            children: [
+              Icon(Icons.edit_rounded, size: 18, color: AppColors.inkSoft),
+              SizedBox(width: 10),
+              Text('相棒の名前を変える'),
+            ],
+          ),
         ),
         PopupMenuItem(
           value: 'reset',
-          child: Row(children: [
-            Icon(Icons.restart_alt_rounded, size: 18, color: AppColors.coralDeep),
-            SizedBox(width: 10),
-            Text('Start over'),
-          ]),
+          child: Row(
+            children: [
+              Icon(
+                Icons.restart_alt_rounded,
+                size: 18,
+                color: AppColors.coralDeep,
+              ),
+              SizedBox(width: 10),
+              Text('最初からやり直す'),
+            ],
+          ),
         ),
       ],
     );
@@ -184,17 +198,17 @@ class HomeScreen extends StatelessWidget {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Rename companion'),
+        title: const Text('相棒の名前を変える'),
         content: TextField(
           controller: controller,
           autofocus: true,
           maxLength: 16,
-          decoration: const InputDecoration(hintText: 'A name'),
+          decoration: const InputDecoration(hintText: '名前'),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Cancel'),
+            child: const Text('キャンセル'),
           ),
           FilledButton(
             onPressed: () {
@@ -202,9 +216,10 @@ class HomeScreen extends StatelessWidget {
               Navigator.of(ctx).pop();
             },
             style: FilledButton.styleFrom(
-                backgroundColor: AppColors.mintDeep,
-                foregroundColor: Colors.white),
-            child: const Text('Save'),
+              backgroundColor: AppColors.mintDeep,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('保存'),
           ),
         ],
       ),
@@ -215,13 +230,12 @@ class HomeScreen extends StatelessWidget {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Start over?'),
-        content: const Text(
-            'This releases your current companion and hatches a fresh egg. Your memories and weekly cards will be cleared.'),
+        title: const Text('最初からやり直しますか？'),
+        content: const Text('今の相棒と記憶カードを消して、新しいたまごから始めます。'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Keep my companion'),
+            child: const Text('今の相棒を残す'),
           ),
           FilledButton(
             onPressed: () {
@@ -229,9 +243,10 @@ class HomeScreen extends StatelessWidget {
               state.resetGame();
             },
             style: FilledButton.styleFrom(
-                backgroundColor: AppColors.coralDeep,
-                foregroundColor: Colors.white),
-            child: const Text('Start over'),
+              backgroundColor: AppColors.coralDeep,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('やり直す'),
           ),
         ],
       ),
@@ -261,15 +276,16 @@ class HomeScreen extends StatelessWidget {
           children: [
             Row(
               children: [
-                Icon(ready ? Icons.celebration_rounded : Icons.eco_rounded,
-                    size: 18,
-                    color: ready ? AppColors.amber : AppColors.mintDeep),
+                Icon(
+                  ready ? Icons.celebration_rounded : Icons.eco_rounded,
+                  size: 18,
+                  color: ready ? AppColors.amber : AppColors.mintDeep,
+                ),
                 const SizedBox(width: 8),
-                Text('Weekly evolution',
-                    style: Theme.of(context).textTheme.titleMedium),
+                Text('今週の進化', style: Theme.of(context).textTheme.titleMedium),
                 const Spacer(),
                 Text(
-                  ready ? 'Ready!' : '$remaining walk${remaining == 1 ? '' : 's'} to go',
+                  ready ? '受け取れます' : 'あと$remaining回',
                   style: TextStyle(
                     fontSize: 12.5,
                     fontWeight: FontWeight.w700,
@@ -303,9 +319,7 @@ class HomeScreen extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              ready
-                  ? 'Tap to open this week\'s evolution card.'
-                  : 'Walk through your places to grow toward a new evolution.',
+              ready ? 'タップすると今週の進化カードを開きます。' : 'いつもの場所を記録すると、次の進化に近づきます。',
               style: const TextStyle(fontSize: 12.5, color: AppColors.inkMuted),
             ),
           ],
@@ -332,25 +346,33 @@ class HomeScreen extends StatelessWidget {
               height: 44,
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
-                    colors: [AppColors.amber, AppColors.coral]),
+                  colors: [AppColors.amber, AppColors.coral],
+                ),
                 borderRadius: BorderRadius.circular(14),
               ),
-              child: const Icon(Icons.workspace_premium_rounded,
-                  color: Colors.white),
+              child: const Icon(
+                Icons.workspace_premium_rounded,
+                color: Colors.white,
+              ),
             ),
             const SizedBox(width: 12),
             const Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('GeoFamiliar Premium',
-                      style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w800,
-                          color: Colors.white)),
+                  Text(
+                    'GeoFamiliar プレミアム',
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w800,
+                      color: Colors.white,
+                    ),
+                  ),
                   SizedBox(height: 2),
-                  Text('Deeper DNA, voice-style memories, legacy & more',
-                      style: TextStyle(fontSize: 12, color: Colors.white70)),
+                  Text(
+                    '深いDNA分析、声色つき記憶、継承など',
+                    style: TextStyle(fontSize: 12, color: Colors.white70),
+                  ),
                 ],
               ),
             ),

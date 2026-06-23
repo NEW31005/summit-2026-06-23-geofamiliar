@@ -19,9 +19,7 @@ class DnaRadar extends StatelessWidget {
     return SizedBox(
       width: size,
       height: size,
-      child: CustomPaint(
-        painter: _RadarPainter(dna),
-      ),
+      child: CustomPaint(painter: _RadarPainter(dna)),
     );
   }
 }
@@ -67,7 +65,8 @@ class _RadarPainter extends CustomPainter {
       final edge = center + Offset(math.cos(a), math.sin(a)) * radius;
       canvas.drawLine(center, edge, spokePaint);
 
-      final labelPos = center + Offset(math.cos(a), math.sin(a)) * (radius + 20);
+      final labelPos =
+          center + Offset(math.cos(a), math.sin(a)) * (radius + 20);
       _drawLabel(canvas, _traits[i], labelPos);
     }
 
