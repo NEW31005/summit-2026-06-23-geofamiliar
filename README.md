@@ -8,6 +8,25 @@
 > Status: デモ / プレビュー版です。現在地取得は任意で、取得できた場合だけ場所カテゴリの候補に反映します。座標や住所は保存せず、記憶にはカテゴリ級の場所ヒントだけを残します。天気、アカウント、バックエンド、自由生成AIはまだモックです。
 > 相棒の見た目は、6フォーム x 4進化段階 x 3ムードの生成PNG資産 v1 を使用しています。
 
+## 現在地と場所意味化の実装範囲
+
+- 実端末では `geolocator` で現在地許可を求めます。拒否しても手動選択で遊べます。
+- 現在地が取得できた場合、`PlaceResolver` が OpenStreetMap Nominatim の逆引きを試みます。
+- 逆引きはタイムアウト・HTTP失敗・オフライン時にローカルfallbackへ戻ります。
+- 記憶に保存するのは `PlaceContext.displayHint` のようなカテゴリ級ヒントだけです。正確な住所と正確な座標は保存しません。
+- 実装ファイル:
+  - `lib/services/location_service.dart`
+  - `lib/services/place_resolver.dart`
+  - `lib/models/place_context.dart`
+  - `lib/models/walk.dart`
+  - `lib/logic/memory_generator.dart`
+
+## 静的検収証跡
+
+- アート差分: `web/art_acceptance/`
+- 場所カテゴリ因果: `web/place_evidence/`
+- 場所カテゴリ因果シートは、同じ初期条件から `水辺の近く x5` と `商業地の近く x5` で、生活圏DNA・相棒の姿・記憶文が分岐することを示します。
+
 ## コアループ
 
 1. **誕生** - 今日の場所、時間帯、天気から相棒を生まれさせる。
