@@ -1,0 +1,35 @@
+{
+    "name": "GeoFamiliar",
+    "short_name": "GeoFamiliar",
+    "start_url": ".",
+    "display": "standalone",
+    "background_color": "#FFFBF4",
+    "theme_color": "#2BB99A",
+    "description": "Walk through real places and grow an AI companion shaped by your living-area Life DNA. Demo build with simulated location.",
+    "orientation": "portrait-primary",
+    "prefer_related_applications": false,
+    "icons": [
+        {
+            "src": "icons/Icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "icons/Icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        },
+        {
+            "src": "icons/Icon-maskable-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "maskable"
+        },
+        {
+            "src": "icons/Icon-maskable-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "maskable"
+        }
+    ]
+}
