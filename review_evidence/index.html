@@ -11,16 +11,28 @@ h2{font-size:20px;margin:28px 0 8px}
 p{color:#6d6257;line-height:1.6}
 a{color:#1c7f6a;font-weight:700}
 pre{white-space:pre-wrap;overflow:auto;background:#fffaf2;border:1px solid #e9ddd0;border-radius:12px;padding:14px;font-size:12.5px;line-height:1.45;color:#3d352f}
-.links{display:grid;gap:10px;margin:18px 0 22px}
+.links{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin:18px 0 22px}
 .links a{display:block;background:#fffaf2;border:1px solid #e9ddd0;border-radius:12px;padding:12px;text-decoration:none}
+.summary{background:#fffaf2;border:1px solid #e9ddd0;padding:14px;border-radius:12px;margin:18px 0}
+.summary li{margin:8px 0;line-height:1.45}
 </style>
 <main>
 <h1>GeoFamiliar Review Evidence</h1>
-<p>Claude/Chloe review用の検証マニフェストです。GitHub raw が取得できない場合でも、Pages上でREADME範囲・実装ファイル抜粋・検証URLを確認できます。</p>
+<p>External review manifest for Claude/Chloe. It gives branch-stable GitHub raw links plus mirrored source excerpts on GitHub Pages, so the review can be scored even if one fetch path fails.</p>
+<ul class="summary">
+  <li>Real optional GPS is implemented through <code>geolocator</code>.</li>
+  <li><code>PlaceResolver</code> attempts OpenStreetMap Nominatim reverse geocoding and falls back locally on network failure.</li>
+  <li>Persisted memories keep broad place hints only, not exact addresses or coordinates.</li>
+  <li>Static causality evidence shows waterside and commercial walks produce different DNA, companion art, and diary text.</li>
+</ul>
 <div class="links">
+  <a href="https://github.com/NEW31005/summit-2026-06-23-geofamiliar">GitHub repository</a>
+  <a href="https://raw.githubusercontent.com/NEW31005/summit-2026-06-23-geofamiliar/main/README.md">Raw README</a>
+  <a href="https://raw.githubusercontent.com/NEW31005/summit-2026-06-23-geofamiliar/main/lib/services/place_resolver.dart">Raw PlaceResolver</a>
+  <a href="review_status.json">Review status JSON</a>
   <a href="../place_evidence/?v=0e24f15">Place causality evidence</a>
   <a href="../art_acceptance/?v=0e24f15">Art acceptance sheets</a>
-  <a href="../?v=9814f5c">App preview</a>
+  <a href="../?v=1286fcc">App preview</a>
 </div>
 
 <section>
@@ -28,14 +40,26 @@ pre{white-space:pre-wrap;overflow:auto;background:#fffaf2;border:1px solid #e9dd
   <p>Commit, public URLs, implementation files, verification. <a href="manifest.txt">plain text</a></p>
   <pre>GeoFamiliar review evidence manifest
 
-Source commit: 9814f5c
-Pages deploy commit: 0e24f15
+Repository:
+- https://github.com/NEW31005/summit-2026-06-23-geofamiliar
+- public: true
+- default branch: main
 
-Public URLs:
-- App preview: https://new31005.github.io/summit-2026-06-23-geofamiliar/?v=9814f5c
+Public Pages:
+- App preview: https://new31005.github.io/summit-2026-06-23-geofamiliar/?v=1286fcc
 - Art acceptance: https://new31005.github.io/summit-2026-06-23-geofamiliar/art_acceptance/?v=0e24f15
 - Place causality: https://new31005.github.io/summit-2026-06-23-geofamiliar/place_evidence/?v=0e24f15
-- Review evidence: https://new31005.github.io/summit-2026-06-23-geofamiliar/review_evidence/?v=0e24f15
+- Review evidence: https://new31005.github.io/summit-2026-06-23-geofamiliar/review_evidence/
+
+GitHub raw source links:
+- README: https://raw.githubusercontent.com/NEW31005/summit-2026-06-23-geofamiliar/main/README.md
+- PlaceResolver: https://raw.githubusercontent.com/NEW31005/summit-2026-06-23-geofamiliar/main/lib/services/place_resolver.dart
+- LocationService: https://raw.githubusercontent.com/NEW31005/summit-2026-06-23-geofamiliar/main/lib/services/location_service.dart
+- PlaceContext: https://raw.githubusercontent.com/NEW31005/summit-2026-06-23-geofamiliar/main/lib/models/place_context.dart
+- WalkModel: https://raw.githubusercontent.com/NEW31005/summit-2026-06-23-geofamiliar/main/lib/models/walk.dart
+- MemoryGenerator: https://raw.githubusercontent.com/NEW31005/summit-2026-06-23-geofamiliar/main/lib/logic/memory_generator.dart
+- LocationTests: https://raw.githubusercontent.com/NEW31005/summit-2026-06-23-geofamiliar/main/test/location_service_test.dart
+- MemoryTests: https://raw.githubusercontent.com/NEW31005/summit-2026-06-23-geofamiliar/main/test/memory_generator_test.dart
 
 Implementation files added for place meaning:
 - lib/models/place_context.dart
@@ -44,10 +68,20 @@ Implementation files added for place meaning:
 - lib/models/walk.dart
 - lib/logic/memory_generator.dart
 
+Implemented claims:
+- README states real optional current-location permission via geolocator.
+- PlaceResolver attempts OpenStreetMap Nominatim reverse geocoding when coordinates are available.
+- PlaceResolver falls back locally on timeout, HTTP failure, malformed data, or offline conditions.
+- PlaceContext serializes only broad category/hint data; exact address and precise coordinates are not persisted.
+- RouteStop.displayLabel carries the broad place hint into walk history.
+- MemoryGenerator uses the broad displayLabel and persists placeHints.
+- Place causality evidence shows waterside versus commercial routes produce different DNA, companion form, and diary text.
+
 Static evidence files:
 - web/art_acceptance/
 - web/place_evidence/
 - web/review_evidence/
+- web/review_evidence/review_status.json
 
 Verification:
 - flutter analyze: PASS
@@ -55,7 +89,73 @@ Verification:
 - flutter build web --release --base-href &quot;/summit-2026-06-23-geofamiliar/&quot;: PASS
 - public place evidence index: HTTP 200
 - public place evidence PNG: HTTP 200
+- public review evidence index: HTTP 200
+- public review evidence source excerpts: HTTP 200
 - public browser QA: heading visible, image rendered, failed request list empty
+</pre>
+</section>
+
+<section>
+  <h2>Machine-readable review status</h2>
+  <p>JSON evidence index for reviewers that cannot reliably browse GitHub pages. <a href="review_status.json">plain text</a></p>
+  <pre>{
+  &quot;project&quot;: &quot;GeoFamiliar&quot;,
+  &quot;repo&quot;: &quot;https://github.com/NEW31005/summit-2026-06-23-geofamiliar&quot;,
+  &quot;default_branch&quot;: &quot;main&quot;,
+  &quot;public_repo&quot;: true,
+  &quot;purpose&quot;: &quot;External review evidence for Chloe after a 73/100 review blocked on source verification.&quot;,
+  &quot;public_pages&quot;: {
+    &quot;App preview&quot;: &quot;https://new31005.github.io/summit-2026-06-23-geofamiliar/?v=1286fcc&quot;,
+    &quot;Art acceptance&quot;: &quot;https://new31005.github.io/summit-2026-06-23-geofamiliar/art_acceptance/?v=0e24f15&quot;,
+    &quot;Place causality&quot;: &quot;https://new31005.github.io/summit-2026-06-23-geofamiliar/place_evidence/?v=0e24f15&quot;,
+    &quot;Review evidence&quot;: &quot;https://new31005.github.io/summit-2026-06-23-geofamiliar/review_evidence/&quot;
+  },
+  &quot;github_raw_links&quot;: {
+    &quot;README&quot;: &quot;https://raw.githubusercontent.com/NEW31005/summit-2026-06-23-geofamiliar/main/README.md&quot;,
+    &quot;PlaceResolver&quot;: &quot;https://raw.githubusercontent.com/NEW31005/summit-2026-06-23-geofamiliar/main/lib/services/place_resolver.dart&quot;,
+    &quot;LocationService&quot;: &quot;https://raw.githubusercontent.com/NEW31005/summit-2026-06-23-geofamiliar/main/lib/services/location_service.dart&quot;,
+    &quot;PlaceContext&quot;: &quot;https://raw.githubusercontent.com/NEW31005/summit-2026-06-23-geofamiliar/main/lib/models/place_context.dart&quot;,
+    &quot;WalkModel&quot;: &quot;https://raw.githubusercontent.com/NEW31005/summit-2026-06-23-geofamiliar/main/lib/models/walk.dart&quot;,
+    &quot;MemoryGenerator&quot;: &quot;https://raw.githubusercontent.com/NEW31005/summit-2026-06-23-geofamiliar/main/lib/logic/memory_generator.dart&quot;,
+    &quot;LocationTests&quot;: &quot;https://raw.githubusercontent.com/NEW31005/summit-2026-06-23-geofamiliar/main/test/location_service_test.dart&quot;,
+    &quot;MemoryTests&quot;: &quot;https://raw.githubusercontent.com/NEW31005/summit-2026-06-23-geofamiliar/main/test/memory_generator_test.dart&quot;
+  },
+  &quot;implemented_claims&quot;: [
+    &quot;README states real optional current-location permission via geolocator.&quot;,
+    &quot;PlaceResolver attempts OpenStreetMap Nominatim reverse geocoding when coordinates are available.&quot;,
+    &quot;PlaceResolver falls back locally on timeout, HTTP failure, malformed data, or offline conditions.&quot;,
+    &quot;PlaceContext serializes only broad category/hint data; exact address and precise coordinates are not persisted.&quot;,
+    &quot;RouteStop.displayLabel carries the broad place hint into walk history.&quot;,
+    &quot;MemoryGenerator uses the broad displayLabel and persists placeHints.&quot;,
+    &quot;Place causality evidence shows waterside versus commercial routes produce different DNA, companion form, and diary text.&quot;
+  ],
+  &quot;verification&quot;: {
+    &quot;flutter_analyze&quot;: &quot;PASS&quot;,
+    &quot;flutter_test&quot;: &quot;PASS, 40 tests&quot;,
+    &quot;flutter_build_web&quot;: &quot;PASS with --base-href \&quot;/summit-2026-06-23-geofamiliar/\&quot;&quot;,
+    &quot;public_review_index&quot;: &quot;HTTP 200&quot;,
+    &quot;public_place_resolver_excerpt&quot;: &quot;HTTP 200&quot;,
+    &quot;public_browser_qa&quot;: &quot;390x844 heading visible, PlaceResolver heading visible, failed request list empty&quot;
+  },
+  &quot;known_scope_limits&quot;: [
+    &quot;Demo preview, not a store-ready Android/iOS release.&quot;,
+    &quot;Weather, account sync, backend, push notifications, and free-form generative AI remain mocked or out of scope.&quot;,
+    &quot;The public web preview is for inspection; native app packaging remains the formal product target.&quot;
+  ]
+}</pre>
+</section>
+
+<section>
+  <h2>GitHub raw source links</h2>
+  <p>Branch-stable source links for direct verification. <a href="github_raw_links.txt">plain text</a></p>
+  <pre>README: https://raw.githubusercontent.com/NEW31005/summit-2026-06-23-geofamiliar/main/README.md
+PlaceResolver: https://raw.githubusercontent.com/NEW31005/summit-2026-06-23-geofamiliar/main/lib/services/place_resolver.dart
+LocationService: https://raw.githubusercontent.com/NEW31005/summit-2026-06-23-geofamiliar/main/lib/services/location_service.dart
+PlaceContext: https://raw.githubusercontent.com/NEW31005/summit-2026-06-23-geofamiliar/main/lib/models/place_context.dart
+WalkModel: https://raw.githubusercontent.com/NEW31005/summit-2026-06-23-geofamiliar/main/lib/models/walk.dart
+MemoryGenerator: https://raw.githubusercontent.com/NEW31005/summit-2026-06-23-geofamiliar/main/lib/logic/memory_generator.dart
+LocationTests: https://raw.githubusercontent.com/NEW31005/summit-2026-06-23-geofamiliar/main/test/location_service_test.dart
+MemoryTests: https://raw.githubusercontent.com/NEW31005/summit-2026-06-23-geofamiliar/main/test/memory_generator_test.dart
 </pre>
 </section>
 
