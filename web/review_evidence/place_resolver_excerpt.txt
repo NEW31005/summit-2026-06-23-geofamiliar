@@ -1,0 +1,170 @@
+001: import 'dart:convert';
+002: 
+003: import 'package:http/http.dart' as http;
+004: 
+005: import '../models/contexts.dart';
+006: import '../models/place_context.dart';
+007: 
+008: class PlaceResolver {
+009:   PlaceResolver({this.client, this.timeout = const Duration(seconds: 4)});
+010: 
+011:   final http.Client? client;
+012:   final Duration timeout;
+013: 
+014:   static final Map<String, PlaceContext> _cache = {};
+015: 
+016:   Future<PlaceContext> resolve(double latitude, double longitude) async {
+017:     final coarseLat = _coarse(latitude);
+018:     final coarseLon = _coarse(longitude);
+019:     final cacheKey = '$coarseLat,$coarseLon';
+020:     final cached = _cache[cacheKey];
+021:     if (cached != null) return cached;
+022: 
+023:     final fallback = _fallback(latitude, longitude, coarseLat, coarseLon);
+024:     final httpClient = client ?? http.Client();
+025:     final shouldClose = client == null;
+026: 
+027:     try {
+028:       final uri = Uri.https('nominatim.openstreetmap.org', '/reverse', {
+029:         'format': 'jsonv2',
+030:         'lat': latitude.toStringAsFixed(6),
+031:         'lon': longitude.toStringAsFixed(6),
+032:         'zoom': '17',
+033:         'addressdetails': '1',
+034:       });
+035:       final response = await httpClient
+036:           .get(uri, headers: {'Accept': 'application/json'})
+037:           .timeout(timeout);
+038:       if (response.statusCode < 200 || response.statusCode >= 300) {
+039:         _cache[cacheKey] = fallback;
+040:         return fallback;
+041:       }
+042: 
+043:       final decoded = jsonDecode(utf8.decode(response.bodyBytes));
+044:       if (decoded is! Map<String, dynamic>) {
+045:         _cache[cacheKey] = fallback;
+046:         return fallback;
+047:       }
+048: 
+049:       final category = PlaceMeaningMapper.fromNominatim(decoded);
+050:       final context = PlaceContext.fromCategory(
+051:         category,
+052:         source: 'openstreetmap',
+053:         coarseLatitude: coarseLat,
+054:         coarseLongitude: coarseLon,
+055:       );
+056:       _cache[cacheKey] = context;
+057:       return context;
+058:     } catch (_) {
+059:       _cache[cacheKey] = fallback;
+060:       return fallback;
+061:     } finally {
+062:       if (shouldClose) httpClient.close();
+063:     }
+064:   }
+065: 
+066:   PlaceContext _fallback(
+067:     double latitude,
+068:     double longitude,
+069:     double coarseLat,
+070:     double coarseLon,
+071:   ) {
+072:     final place = _placeFromCoordinates(latitude, longitude);
+073:     return PlaceContext.fromCategory(
+074:       PlaceMeaningMapper.fromPlaceType(place),
+075:       source: 'offline',
+076:       coarseLatitude: coarseLat,
+077:       coarseLongitude: coarseLon,
+078:     );
+079:   }
+080: 
+081:   static double _coarse(double value) => double.parse(value.toStringAsFixed(3));
+082: 
+083:   static PlaceType _placeFromCoordinates(double latitude, double longitude) {
+084:     final latBucket = (latitude.abs() * 1000).floor();
+085:     final lonBucket = (longitude.abs() * 1000).floor();
+086:     final bucket = (latBucket + lonBucket) % 8;
+087:     return const [
+088:       PlaceType.station,
+089:       PlaceType.park,
+090:       PlaceType.office,
+091:       PlaceType.river,
+092:       PlaceType.cafe,
+093:       PlaceType.residential,
+094:       PlaceType.shopping,
+095:       PlaceType.nightStore,
+096:     ][bucket];
+097:   }
+098: }
+099: 
+100: class PlaceMeaningMapper {
+101:   const PlaceMeaningMapper._();
+102: 
+103:   static PlaceMeaningCategory fromPlaceType(PlaceType place) {
+104:     return switch (place) {
+105:       PlaceType.station => PlaceMeaningCategory.station,
+106:       PlaceType.park => PlaceMeaningCategory.park,
+107:       PlaceType.office => PlaceMeaningCategory.office,
+108:       PlaceType.river => PlaceMeaningCategory.waterside,
+109:       PlaceType.cafe => PlaceMeaningCategory.cafe,
+110:       PlaceType.residential => PlaceMeaningCategory.residential,
+111:       PlaceType.shopping => PlaceMeaningCategory.commercial,
+112:       PlaceType.nightStore => PlaceMeaningCategory.convenience,
+113:       PlaceType.travel => PlaceMeaningCategory.travel,
+114:     };
+115:   }
+116: 
+117:   static PlaceMeaningCategory fromNominatim(Map<String, dynamic> json) {
+118:     final text = _flatten(json);
+119:     if (_hasAny(text, ['station', 'railway', 'subway', 'tram', 'bus_stop'])) {
+120:       return PlaceMeaningCategory.station;
+121:     }
+122:     if (_hasAny(text, [
+123:       'river',
+124:       'stream',
+125:       'canal',
+126:       'lake',
+127:       'pond',
+128:       'waterway',
+129:     ])) {
+130:       return PlaceMeaningCategory.waterside;
+131:     }
+132:     if (_hasAny(text, ['park', 'garden', 'grass', 'forest', 'wood', 'green'])) {
+133:       return PlaceMeaningCategory.park;
+134:     }
+135:     if (_hasAny(text, ['school', 'university', 'college', 'kindergarten'])) {
+136:       return PlaceMeaningCategory.school;
+137:     }
+138:     if (_hasAny(text, [
+139:       'hospital',
+140:       'clinic',
+141:       'pharmacy',
+142:       'dentist',
+143:       'medical',
+144:     ])) {
+145:       return PlaceMeaningCategory.medical;
+146:     }
+147:     if (_hasAny(text, ['shrine', 'temple', 'place_of_worship'])) {
+148:       return PlaceMeaningCategory.shrineTemple;
+149:     }
+150:     if (_hasAny(text, ['cafe', 'coffee', 'restaurant'])) {
+151:       return PlaceMeaningCategory.cafe;
+152:     }
+153:     if (_hasAny(text, ['convenience', 'supermarket'])) {
+154:       return PlaceMeaningCategory.convenience;
+155:     }
+156:     if (_hasAny(text, ['mall', 'retail', 'shop', 'store', 'commercial'])) {
+157:       return PlaceMeaningCategory.commercial;
+158:     }
+159:     if (_hasAny(text, ['office', 'business', 'industrial'])) {
+160:       return PlaceMeaningCategory.office;
+161:     }
+162:     if (_hasAny(text, ['residential', 'neighbourhood', 'suburb', 'quarter'])) {
+163:       return PlaceMeaningCategory.residential;
+164:     }
+165:     return PlaceMeaningCategory.other;
+166:   }
+167: 
+168:   static String _flatten(Object? value) {
+169:     final chunks = <String>[];
+170:     void visit(Object? node) {
