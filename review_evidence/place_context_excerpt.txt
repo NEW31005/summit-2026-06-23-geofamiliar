@@ -1,0 +1,101 @@
+001: import 'contexts.dart';
+002: 
+003: /// Coarse place meaning inferred from a location lookup.
+004: ///
+005: /// This intentionally stores a category and a broad display hint, not an exact
+006: /// address or precise coordinates. Exact coordinates only live during the
+007: /// current read inside LocationRead.
+008: enum PlaceMeaningCategory {
+009:   residential('住宅街周辺', PlaceType.residential),
+010:   commercial('商業地の近く', PlaceType.shopping),
+011:   park('公園の近く', PlaceType.park),
+012:   station('駅周辺', PlaceType.station),
+013:   waterside('水辺の近く', PlaceType.river),
+014:   greenery('緑地の近く', PlaceType.park),
+015:   school('学校の近く', PlaceType.residential),
+016:   medical('医療施設の近く', PlaceType.office),
+017:   shrineTemple('神社・お寺の近く', PlaceType.travel),
+018:   office('オフィス街周辺', PlaceType.office),
+019:   cafe('カフェ周辺', PlaceType.cafe),
+020:   convenience('夜のコンビニ周辺', PlaceType.nightStore),
+021:   travel('旅先の近く', PlaceType.travel),
+022:   other('いつもの場所', PlaceType.residential);
+023: 
+024:   const PlaceMeaningCategory(this.displayHint, this.place);
+025: 
+026:   final String displayHint;
+027:   final PlaceType place;
+028: 
+029:   static PlaceMeaningCategory fromName(String? name) {
+030:     return PlaceMeaningCategory.values.firstWhere(
+031:       (category) => category.name == name,
+032:       orElse: () => PlaceMeaningCategory.other,
+033:     );
+034:   }
+035: }
+036: 
+037: class PlaceContext {
+038:   const PlaceContext({
+039:     required this.place,
+040:     required this.category,
+041:     required this.displayHint,
+042:     required this.source,
+043:     this.coarseLatitude,
+044:     this.coarseLongitude,
+045:   });
+046: 
+047:   final PlaceType place;
+048:   final PlaceMeaningCategory category;
+049:   final String displayHint;
+050:   final String source;
+051: 
+052:   /// Rounded coordinates are transient evidence for the current read. They are
+053:   /// deliberately omitted from persistence by [toJson].
+054:   final double? coarseLatitude;
+055:   final double? coarseLongitude;
+056: 
+057:   factory PlaceContext.manual(PlaceType place) {
+058:     return PlaceContext(
+059:       place: place,
+060:       category: PlaceMeaningCategory.other,
+061:       displayHint: place.label,
+062:       source: 'manual',
+063:     );
+064:   }
+065: 
+066:   factory PlaceContext.fromCategory(
+067:     PlaceMeaningCategory category, {
+068:     String source = 'resolver',
+069:     double? coarseLatitude,
+070:     double? coarseLongitude,
+071:   }) {
+072:     return PlaceContext(
+073:       place: category.place,
+074:       category: category,
+075:       displayHint: category.displayHint,
+076:       source: source,
+077:       coarseLatitude: coarseLatitude,
+078:       coarseLongitude: coarseLongitude,
+079:     );
+080:   }
+081: 
+082:   Map<String, dynamic> toJson() => {
+083:     'place': place.name,
+084:     'category': category.name,
+085:     'displayHint': displayHint,
+086:     'source': source,
+087:   };
+088: 
+089:   factory PlaceContext.fromJson(Map<String, dynamic> json) {
+090:     final category = PlaceMeaningCategory.fromName(json['category'] as String?);
+091:     final place = PlaceType.fromName(
+092:       json['place'] as String? ?? category.place.name,
+093:     );
+094:     return PlaceContext(
+095:       place: place,
+096:       category: category,
+097:       displayHint: json['displayHint'] as String? ?? category.displayHint,
+098:       source: json['source'] as String? ?? 'saved',
+099:     );
+100:   }
+101: }

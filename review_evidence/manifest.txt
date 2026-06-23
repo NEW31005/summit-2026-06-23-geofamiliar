@@ -1,0 +1,30 @@
+GeoFamiliar review evidence manifest
+
+Source commit: 9814f5c
+Pages deploy commit: 0e24f15
+
+Public URLs:
+- App preview: https://new31005.github.io/summit-2026-06-23-geofamiliar/?v=9814f5c
+- Art acceptance: https://new31005.github.io/summit-2026-06-23-geofamiliar/art_acceptance/?v=0e24f15
+- Place causality: https://new31005.github.io/summit-2026-06-23-geofamiliar/place_evidence/?v=0e24f15
+- Review evidence: https://new31005.github.io/summit-2026-06-23-geofamiliar/review_evidence/?v=0e24f15
+
+Implementation files added for place meaning:
+- lib/models/place_context.dart
+- lib/services/place_resolver.dart
+- lib/services/location_service.dart
+- lib/models/walk.dart
+- lib/logic/memory_generator.dart
+
+Static evidence files:
+- web/art_acceptance/
+- web/place_evidence/
+- web/review_evidence/
+
+Verification:
+- flutter analyze: PASS
+- flutter test: PASS, 40 tests
+- flutter build web --release --base-href "/summit-2026-06-23-geofamiliar/": PASS
+- public place evidence index: HTTP 200
+- public place evidence PNG: HTTP 200
+- public browser QA: heading visible, image rendered, failed request list empty
