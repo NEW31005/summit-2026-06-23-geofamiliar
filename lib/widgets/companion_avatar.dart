@@ -4,18 +4,18 @@ import 'package:flutter/material.dart';
 
 import '../models/dna_trait.dart';
 
-/// The companion creature, drawn with [CustomPaint] so its colours, markings and
-/// accessories shift with its Life DNA and evolution stage. A soft breathing +
-/// bobbing animation keeps it alive.
+/// The companion creature. The main path uses generated transparent PNG assets
+/// so the app reads like a mascot product instead of a drawing prototype. A
+/// soft breathing + bobbing animation keeps it alive.
 ///
 /// Identity is layered so it reads as an ownable mascot, not a generic blob:
-/// - body colour comes from the dominant trait, blended toward the secondary;
-/// - a belly **marking** is shaped by the dominant trait (bolt, wave, heart...);
-/// - **stage** adds legible accessories: a head sprout, a collar, then a crown,
-///   plus growing aura rings.
+/// - the dominant trait selects one of six illustrated forms;
+/// - mood selects normal / happy / rest PNG variants;
+/// - stage selects hatchling / wanderer / kindred / luminary evolution assets.
 ///
 /// Stable footprint: always lays out at [size] x [size]. Fully deterministic for
-/// a given (primary, secondary, mood, stageRing, seed, phase).
+/// a given (primary, mood, stageRing, phase). The old painter remains as a
+/// fallback for missing assets and for the unhatched egg state.
 class CompanionAvatar extends StatefulWidget {
   const CompanionAvatar({
     super.key,
@@ -64,20 +64,101 @@ class _CompanionAvatarState extends State<CompanionAvatar>
         animation: _controller,
         builder: (context, _) {
           final t = _controller.value;
-          return CustomPaint(
-            painter: _CompanionPainter(
-              primaryTrait: widget.primary,
-              primary: widget.primary.color,
-              secondary: widget.secondary.color,
-              mood: widget.mood,
-              stageRing: widget.stageRing,
-              seed: widget.seed,
-              hatched: widget.hatched,
-              sparkle: widget.sparkle,
-              phase: t,
-            ),
+          if (!widget.hatched || widget.stageRing <= 0) {
+            return _PainterCompanionAvatar(widget: widget, phase: t);
+          }
+
+          return _CompanionImageAvatar(
+            widget: widget,
+            phase: t,
+            fallback: _PainterCompanionAvatar(widget: widget, phase: t),
           );
         },
+      ),
+    );
+  }
+}
+
+class _CompanionImageAvatar extends StatelessWidget {
+  const _CompanionImageAvatar({
+    required this.widget,
+    required this.phase,
+    required this.fallback,
+  });
+
+  final CompanionAvatar widget;
+  final double phase;
+  final Widget fallback;
+
+  @override
+  Widget build(BuildContext context) {
+    final breathe = math.sin(phase * 2 * math.pi);
+    final path = _assetPath(widget.primary, widget.stageRing, widget.mood);
+
+    return Transform.translate(
+      offset: Offset(0, breathe * widget.size * 0.014),
+      child: Transform.scale(
+        scale: 1 + breathe * 0.012,
+        child: Image.asset(
+          path,
+          key: ValueKey(path),
+          width: widget.size,
+          height: widget.size,
+          fit: BoxFit.contain,
+          filterQuality: FilterQuality.high,
+          semanticLabel: '${widget.primary.label}の相棒',
+          errorBuilder: (context, error, stackTrace) => fallback,
+        ),
+      ),
+    );
+  }
+
+  static String _assetPath(DnaTrait trait, int stageRing, String mood) {
+    final stage = switch (stageRing) {
+      >= 4 => 'luminary',
+      >= 3 => 'kindred',
+      >= 2 => 'wanderer',
+      _ => 'hatchling',
+    };
+    return 'assets/companion/$stage/${trait.name}_${_moodKey(mood)}.png';
+  }
+
+  static String _moodKey(String mood) {
+    if (mood.contains('うっとり') ||
+        mood.contains('ほっと') ||
+        mood.contains('待って') ||
+        mood.contains('休')) {
+      return 'rest';
+    }
+    if (mood.contains('ぬくぬく') ||
+        mood.contains('そわそわ') ||
+        mood.contains('わく') ||
+        mood.contains('明る')) {
+      return 'happy';
+    }
+    return 'normal';
+  }
+}
+
+class _PainterCompanionAvatar extends StatelessWidget {
+  const _PainterCompanionAvatar({required this.widget, required this.phase});
+
+  final CompanionAvatar widget;
+  final double phase;
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomPaint(
+      painter: _CompanionPainter(
+        primaryTrait: widget.primary,
+        primary: widget.primary.color,
+        secondary: widget.secondary.color,
+        mood: widget.mood,
+        stageRing: widget.stageRing,
+        seed: widget.seed,
+        hatched: widget.hatched,
+        sparkle: widget.sparkle,
+        phase: phase,
       ),
     );
   }
