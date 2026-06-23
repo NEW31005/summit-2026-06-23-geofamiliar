@@ -1,0 +1,45 @@
+{
+  "project": "GeoFamiliar",
+  "repo": "https://github.com/NEW31005/summit-2026-06-23-geofamiliar",
+  "default_branch": "main",
+  "public_repo": true,
+  "purpose": "External review evidence for Chloe after a 73/100 review blocked on source verification.",
+  "public_pages": {
+    "App preview": "https://new31005.github.io/summit-2026-06-23-geofamiliar/?v=1286fcc",
+    "Art acceptance": "https://new31005.github.io/summit-2026-06-23-geofamiliar/art_acceptance/?v=0e24f15",
+    "Place causality": "https://new31005.github.io/summit-2026-06-23-geofamiliar/place_evidence/?v=0e24f15",
+    "Review evidence": "https://new31005.github.io/summit-2026-06-23-geofamiliar/review_evidence/"
+  },
+  "github_raw_links": {
+    "README": "https://raw.githubusercontent.com/NEW31005/summit-2026-06-23-geofamiliar/main/README.md",
+    "PlaceResolver": "https://raw.githubusercontent.com/NEW31005/summit-2026-06-23-geofamiliar/main/lib/services/place_resolver.dart",
+    "LocationService": "https://raw.githubusercontent.com/NEW31005/summit-2026-06-23-geofamiliar/main/lib/services/location_service.dart",
+    "PlaceContext": "https://raw.githubusercontent.com/NEW31005/summit-2026-06-23-geofamiliar/main/lib/models/place_context.dart",
+    "WalkModel": "https://raw.githubusercontent.com/NEW31005/summit-2026-06-23-geofamiliar/main/lib/models/walk.dart",
+    "MemoryGenerator": "https://raw.githubusercontent.com/NEW31005/summit-2026-06-23-geofamiliar/main/lib/logic/memory_generator.dart",
+    "LocationTests": "https://raw.githubusercontent.com/NEW31005/summit-2026-06-23-geofamiliar/main/test/location_service_test.dart",
+    "MemoryTests": "https://raw.githubusercontent.com/NEW31005/summit-2026-06-23-geofamiliar/main/test/memory_generator_test.dart"
+  },
+  "implemented_claims": [
+    "README states real optional current-location permission via geolocator.",
+    "PlaceResolver attempts OpenStreetMap Nominatim reverse geocoding when coordinates are available.",
+    "PlaceResolver falls back locally on timeout, HTTP failure, malformed data, or offline conditions.",
+    "PlaceContext serializes only broad category/hint data; exact address and precise coordinates are not persisted.",
+    "RouteStop.displayLabel carries the broad place hint into walk history.",
+    "MemoryGenerator uses the broad displayLabel and persists placeHints.",
+    "Place causality evidence shows waterside versus commercial routes produce different DNA, companion form, and diary text."
+  ],
+  "verification": {
+    "flutter_analyze": "PASS",
+    "flutter_test": "PASS, 40 tests",
+    "flutter_build_web": "PASS with --base-href \"/summit-2026-06-23-geofamiliar/\"",
+    "public_review_index": "HTTP 200",
+    "public_place_resolver_excerpt": "HTTP 200",
+    "public_browser_qa": "390x844 heading visible, PlaceResolver heading visible, failed request list empty"
+  },
+  "known_scope_limits": [
+    "Demo preview, not a store-ready Android/iOS release.",
+    "Weather, account sync, backend, push notifications, and free-form generative AI remain mocked or out of scope.",
+    "The public web preview is for inspection; native app packaging remains the formal product target."
+  ]
+}
