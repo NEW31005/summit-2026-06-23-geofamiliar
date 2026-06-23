@@ -1,18 +1,32 @@
 import 'contexts.dart';
 import 'dna_trait.dart';
 import 'life_dna.dart';
+import 'place_context.dart';
 import '../logic/dna_engine.dart';
 
 /// One stop on a walk - a single place visited under the day's time/weather.
 class RouteStop {
-  const RouteStop(this.place);
+  const RouteStop(this.place, {this.context});
 
   final PlaceType place;
+  final PlaceContext? context;
 
-  Map<String, dynamic> toJson() => {'place': place.name};
+  PlaceContext get effectiveContext => context ?? PlaceContext.manual(place);
+  String get displayLabel => effectiveContext.displayHint;
 
-  factory RouteStop.fromJson(Map<String, dynamic> json) =>
-      RouteStop(PlaceType.fromName(json['place'] as String));
+  Map<String, dynamic> toJson() => {
+    'place': place.name,
+    if (context != null) 'context': context!.toJson(),
+  };
+
+  factory RouteStop.fromJson(Map<String, dynamic> json) {
+    final place = PlaceType.fromName(json['place'] as String);
+    final contextJson = json['context'];
+    final context = contextJson is Map<String, dynamic>
+        ? PlaceContext.fromJson(contextJson)
+        : null;
+    return RouteStop(place, context: context);
+  }
 }
 
 /// A simulated walk: an ordered route of stops under a shared time + weather.

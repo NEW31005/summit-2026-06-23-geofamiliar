@@ -119,5 +119,22 @@ void main() {
       expect(state.memories, isEmpty);
       expect(state.isPremium, isFalse);
     });
+
+    test('premium demo entitlement flow purchase restore and cancel', () async {
+      final state = AppState();
+      await state.init();
+
+      final purchase = await state.purchasePremiumDemo();
+      expect(purchase.isActive, isTrue);
+      expect(state.isPremium, isTrue);
+
+      final cancel = await state.cancelPremiumDemo();
+      expect(cancel.isActive, isFalse);
+      expect(state.isPremium, isFalse);
+
+      final restore = await state.restorePremiumDemo();
+      expect(restore.isActive, isTrue);
+      expect(state.isPremium, isTrue);
+    });
   });
 }

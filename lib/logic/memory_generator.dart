@@ -17,16 +17,16 @@ class MemoryGenerator {
     bool premium = false,
   }) {
     final lead = walk.lead;
-    final leadPlace = walk.stops.isNotEmpty
-        ? walk.stops.first.place
-        : PlaceType.park;
-    final lastPlace = walk.stops.isNotEmpty ? walk.stops.last.place : leadPlace;
+    final leadPlace = walk.stops.isNotEmpty ? walk.stops.first : null;
+    final lastPlace = walk.stops.isNotEmpty ? walk.stops.last : leadPlace;
+    final firstLabel = leadPlace?.displayLabel ?? PlaceType.park.label;
+    final lastLabel = lastPlace?.displayLabel ?? firstLabel;
 
     final templates = _diaryTemplates[lead]!;
     final base = templates[seed.abs() % templates.length];
     var diary = base
-        .replaceAll('{first}', leadPlace.label)
-        .replaceAll('{last}', lastPlace.label)
+        .replaceAll('{first}', firstLabel)
+        .replaceAll('{last}', lastLabel)
         .replaceAll('{time}', walk.time.label)
         .replaceAll('{weather}', walk.weather.label);
 
@@ -43,6 +43,7 @@ class MemoryGenerator {
       diary: diary,
       lead: lead,
       places: walk.stops.map((s) => s.place).toList(),
+      placeHints: walk.stops.map((s) => s.displayLabel).toList(),
       time: walk.time,
       weather: walk.weather,
       dayLabel: '$dayIndex日目',

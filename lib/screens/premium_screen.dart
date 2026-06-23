@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../state/app_scope.dart';
+import '../state/app_state.dart';
 import '../theme/app_colors.dart';
 import '../widgets/app_background.dart';
 import '../widgets/misc_widgets.dart';
@@ -97,6 +98,8 @@ class PremiumScreen extends StatelessWidget {
                     ..._features.map((f) => _featureCard(f)),
                     const SizedBox(height: 18),
                     _pricing(context),
+                    const SizedBox(height: 16),
+                    _entitlementCard(isPremium),
                     const SizedBox(height: 16),
                     _ethicsNote(),
                     const SizedBox(height: 20),
@@ -390,37 +393,106 @@ class PremiumScreen extends StatelessWidget {
     );
   }
 
-  Widget _ctaButton(BuildContext context, state, bool isPremium) {
+  Widget _entitlementCard(bool isPremium) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.07),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(
+            isPremium ? Icons.verified_rounded : Icons.lock_outline_rounded,
+            size: 22,
+            color: isPremium ? AppColors.amber : AppColors.mint,
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  isPremium ? '権利状態: プレミアム有効' : '権利状態: 無料プラン',
+                  style: const TextStyle(
+                    fontSize: 13.5,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                const Text(
+                  'このビルドではデモ権利サービスで購入・復元・解除を確認できます。本番では同じ境界をStoreKit / Google Play Billingに接続します。',
+                  style: TextStyle(
+                    fontSize: 12,
+                    height: 1.35,
+                    color: Colors.white60,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _ctaButton(BuildContext context, AppState state, bool isPremium) {
     if (isPremium) {
       return OutlinedButton.icon(
-        onPressed: () {
-          state.setPremium(false);
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(const SnackBar(content: Text('プレミアムデモをオフにしました')));
+        onPressed: () async {
+          final result = await state.cancelPremiumDemo();
+          if (!context.mounted) return;
+          _showEntitlementResult(context, result.message);
         },
         icon: const Icon(Icons.lock_open_rounded, color: Colors.white),
-        label: const Text('プレミアムデモをオフ', style: TextStyle(color: Colors.white)),
+        label: const Text('デモ権利を解除', style: TextStyle(color: Colors.white)),
         style: OutlinedButton.styleFrom(
           side: const BorderSide(color: Colors.white24, width: 1.5),
           minimumSize: const Size.fromHeight(52),
         ),
       );
     }
-    return FilledButton.icon(
-      onPressed: () {
-        state.setPremium(true);
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('プレミアムデモをオンにしました')));
-      },
-      icon: const Icon(Icons.workspace_premium_rounded),
-      label: const Text('プレミアムデモをオン'),
-      style: FilledButton.styleFrom(
-        backgroundColor: AppColors.amber,
-        foregroundColor: AppColors.ink,
-      ),
+    return Column(
+      children: [
+        FilledButton.icon(
+          onPressed: () async {
+            final result = await state.purchasePremiumDemo();
+            if (!context.mounted) return;
+            _showEntitlementResult(context, result.message);
+          },
+          icon: const Icon(Icons.workspace_premium_rounded),
+          label: const Text('購入をシミュレーション'),
+          style: FilledButton.styleFrom(
+            backgroundColor: AppColors.amber,
+            foregroundColor: AppColors.ink,
+            minimumSize: const Size.fromHeight(52),
+          ),
+        ),
+        const SizedBox(height: 10),
+        OutlinedButton.icon(
+          onPressed: () async {
+            final result = await state.restorePremiumDemo();
+            if (!context.mounted) return;
+            _showEntitlementResult(context, result.message);
+          },
+          icon: const Icon(Icons.restore_rounded, color: Colors.white),
+          label: const Text('購入復元をテスト', style: TextStyle(color: Colors.white)),
+          style: OutlinedButton.styleFrom(
+            side: const BorderSide(color: Colors.white24, width: 1.5),
+            minimumSize: const Size.fromHeight(50),
+          ),
+        ),
+      ],
     );
+  }
+
+  void _showEntitlementResult(BuildContext context, String message) {
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   Widget _beforeAfterCard(_BeforeAfter ba) {

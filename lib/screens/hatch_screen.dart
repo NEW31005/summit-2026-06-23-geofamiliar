@@ -5,6 +5,7 @@ import '../logic/memory_generator.dart';
 import '../models/contexts.dart';
 import '../models/dna_trait.dart';
 import '../models/memory_card.dart';
+import '../models/place_context.dart';
 import '../models/walk.dart';
 import '../services/location_service.dart';
 import '../state/app_scope.dart';
@@ -57,14 +58,24 @@ class _HatchScreenState extends State<HatchScreen> {
 
   void _startHatch() {
     setState(() => _step = _Step.hatching);
-    Future.delayed(const Duration(milliseconds: 1900), () {
+    Future.delayed(const Duration(milliseconds: 2600), () {
       if (mounted) setState(() => _step = _Step.reveal);
     });
   }
 
   void _enterApp() {
-    AppScope.read(context).hatch(_place, _time, _weather);
+    AppScope.read(
+      context,
+    ).hatch(_place, _time, _weather, placeContext: _selectedContext());
     // _RootGate will switch to the home shell automatically.
+  }
+
+  PlaceContext _selectedContext() {
+    final read = _locationRead;
+    if (read != null && read.isReady && read.place == _place) {
+      return read.context;
+    }
+    return PlaceContext.manual(_place);
   }
 
   @override
@@ -206,7 +217,10 @@ class _HatchScreenState extends State<HatchScreen> {
               label: p.label,
               tagline: p.tagline,
               selected: _place == p,
-              onTap: () => setState(() => _place = p),
+              onTap: () => setState(() {
+                _place = p;
+                if (_locationRead?.place != p) _locationRead = null;
+              }),
             );
           }).toList(),
         ),
@@ -262,7 +276,7 @@ class _HatchScreenState extends State<HatchScreen> {
                   const SizedBox(width: 4),
                   Expanded(
                     child: Text(
-                      '${_place.label} / ${_time.label} / ${_weather.label}',
+                      '${_selectedContext().displayHint} / ${_time.label} / ${_weather.label}',
                       style: const TextStyle(
                         fontSize: 12.5,
                         fontWeight: FontWeight.w700,
@@ -274,7 +288,7 @@ class _HatchScreenState extends State<HatchScreen> {
               ),
               const SizedBox(height: 6),
               Text(
-                '${_place.tagline} ここで生まれる相棒は、その気配を持っていきます。',
+                '${_place.tagline} 記憶には住所ではなく「${_selectedContext().displayHint}」という広い気配だけを残します。',
                 style: const TextStyle(
                   fontSize: 12.5,
                   height: 1.35,
@@ -348,7 +362,7 @@ class _HatchScreenState extends State<HatchScreen> {
           if (read != null && read.isReady) ...[
             const SizedBox(height: 6),
             Text(
-              '取得精度: ${read.accuracyLabel} / 座標は保存・送信しません',
+              '取得精度: ${read.accuracyLabel} / 保存するのは場所カテゴリだけです',
               style: const TextStyle(fontSize: 11, color: AppColors.inkMuted),
             ),
           ],
@@ -374,40 +388,68 @@ class _HatchScreenState extends State<HatchScreen> {
 
   // ------------------------------------------------------------- hatching
   Widget _hatching() {
+    final placeHint = _selectedContext().displayHint;
     return Center(
       key: const ValueKey('hatching'),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          CompanionAvatar(
-            primary: _place.dna.keys.first,
-            secondary: DnaTrait.warmth,
-            mood: '待っている',
-            stageRing: 0,
-            seed: _place.index + 1,
-            hatched: false,
-            sparkle: true,
-            size: 200,
-          ),
-          const SizedBox(height: 24),
-          const SizedBox(
-            width: 26,
-            height: 26,
-            child: CircularProgressIndicator(
-              strokeWidth: 3,
-              color: AppColors.amber,
-            ),
-          ),
-          const SizedBox(height: 18),
-          const Text(
-            '生活圏DNAを読んでいます...',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
-              color: Colors.white,
-            ),
-          ),
-        ],
+      child: TweenAnimationBuilder<double>(
+        tween: Tween(begin: 0, end: 1),
+        duration: const Duration(milliseconds: 2500),
+        builder: (context, value, child) {
+          final phase = value < 0.34
+              ? '場所の気配を読んでいます'
+              : value < 0.68
+              ? '生活圏DNAがほどけています'
+              : '相棒の輪郭が生まれます';
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CompanionAvatar(
+                primary: _place.dna.keys.first,
+                secondary: DnaTrait.warmth,
+                mood: '待っている',
+                stageRing: 0,
+                seed: _place.index + 1,
+                hatched: false,
+                sparkle: true,
+                size: 200 + value * 14,
+              ),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: 180,
+                child: LinearProgressIndicator(
+                  value: value,
+                  minHeight: 6,
+                  borderRadius: BorderRadius.circular(999),
+                  backgroundColor: Colors.white.withValues(alpha: 0.18),
+                  color: AppColors.amber,
+                ),
+              ),
+              const SizedBox(height: 18),
+              AnimatedSwitcher(
+                duration: const Duration(milliseconds: 240),
+                child: Text(
+                  phase,
+                  key: ValueKey(phase),
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                placeHint,
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.amber,
+                ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
@@ -418,12 +460,13 @@ class _HatchScreenState extends State<HatchScreen> {
     final personality = DnaEngine.personality(dna);
     final form = DnaEngine.formName(dna.dominant);
     final MemoryCard firstMemory = _previewFirstMemory();
+    final placeContext = _selectedContext();
 
     final contributions = <MapEntry<DnaTrait, String>>[
       ..._place.dna.entries.map(
         (e) => MapEntry(
           e.key,
-          '${_place.label} -> +${e.value.toStringAsFixed(0)}',
+          '${placeContext.displayHint} -> +${e.value.toStringAsFixed(0)}',
         ),
       ),
       ..._time.boost.entries.map(
@@ -605,7 +648,7 @@ class _HatchScreenState extends State<HatchScreen> {
   MemoryCard _previewFirstMemory() {
     // Mirror AppState.hatch's seed so the reveal matches what gets saved.
     final walk = Walk(
-      stops: [RouteStop(_place)],
+      stops: [RouteStop(_place, context: _selectedContext())],
       time: _time,
       weather: _weather,
     );

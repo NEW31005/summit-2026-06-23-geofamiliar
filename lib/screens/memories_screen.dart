@@ -178,8 +178,8 @@ class _MemoryTile extends StatelessWidget {
                   runSpacing: 6,
                   children: [
                     DnaChip(trait: lead, dense: true),
-                    ..._uniquePlaces(memory).map(
-                      (p) => Container(
+                    ..._uniquePlaceHints(memory).map(
+                      (item) => Container(
                         height: 30,
                         padding: const EdgeInsets.symmetric(horizontal: 10),
                         decoration: BoxDecoration(
@@ -190,10 +190,14 @@ class _MemoryTile extends StatelessWidget {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(p.icon, size: 13, color: AppColors.inkMuted),
+                            Icon(
+                              item.place.icon,
+                              size: 13,
+                              color: AppColors.inkMuted,
+                            ),
                             const SizedBox(width: 5),
                             Text(
-                              p.label,
+                              item.label,
                               style: const TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w600,
@@ -214,8 +218,14 @@ class _MemoryTile extends StatelessWidget {
     );
   }
 
-  List<PlaceType> _uniquePlaces(MemoryCard m) {
+  List<({PlaceType place, String label})> _uniquePlaceHints(MemoryCard m) {
     final seen = <String>{};
-    return m.places.where((p) => seen.add(p.name)).toList();
+    final result = <({PlaceType place, String label})>[];
+    for (var i = 0; i < m.places.length; i += 1) {
+      final place = m.places[i];
+      final label = i < m.placeHints.length ? m.placeHints[i] : place.label;
+      if (seen.add(label)) result.add((place: place, label: label));
+    }
+    return result;
   }
 }

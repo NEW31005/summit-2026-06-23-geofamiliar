@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:geolocator/geolocator.dart';
 
 import '../models/contexts.dart';
+import '../models/place_context.dart';
+import 'place_resolver.dart';
 
 enum LocationReadStatus { ready, denied, disabled, unavailable }
 
@@ -10,6 +12,7 @@ class LocationRead {
   const LocationRead({
     required this.status,
     required this.place,
+    required this.context,
     required this.time,
     required this.message,
     this.latitude,
@@ -20,6 +23,7 @@ class LocationRead {
 
   final LocationReadStatus status;
   final PlaceType place;
+  final PlaceContext context;
   final TimeContext time;
   final String message;
   final double? latitude;
@@ -75,6 +79,7 @@ class DeviceLocationService {
         return LocationRead(
           status: LocationReadStatus.disabled,
           place: PlaceType.residential,
+          context: PlaceContext.manual(PlaceType.residential),
           time: time,
           message: '端末の位置情報がオフです。手動で場所を選んで続けられます。',
         );
@@ -90,6 +95,7 @@ class DeviceLocationService {
         return LocationRead(
           status: LocationReadStatus.denied,
           place: PlaceType.residential,
+          context: PlaceContext.manual(PlaceType.residential),
           time: time,
           message: '位置情報の許可がないため、今日は手動選択で進めます。',
         );
@@ -102,13 +108,16 @@ class DeviceLocationService {
             timeLimit: Duration(seconds: 8),
           ),
         );
-        return _fromPosition(position, time, cached: false);
+        return await _fromPosition(position, time, cached: false);
       } on TimeoutException {
         final cached = await Geolocator.getLastKnownPosition();
-        if (cached != null) return _fromPosition(cached, time, cached: true);
+        if (cached != null) {
+          return await _fromPosition(cached, time, cached: true);
+        }
         return LocationRead(
           status: LocationReadStatus.unavailable,
           place: PlaceType.residential,
+          context: PlaceContext.manual(PlaceType.residential),
           time: time,
           message: '現在地の取得が時間切れになりました。手動で選べばそのまま遊べます。',
         );
@@ -117,31 +126,34 @@ class DeviceLocationService {
       return LocationRead(
         status: LocationReadStatus.unavailable,
         place: PlaceType.residential,
+        context: PlaceContext.manual(PlaceType.residential),
         time: time,
         message: 'この環境では現在地を取得できませんでした。手動選択で続けられます。',
       );
     }
   }
 
-  LocationRead _fromPosition(
+  Future<LocationRead> _fromPosition(
     Position position,
     TimeContext time, {
     required bool cached,
-  }) {
-    final place = LocationHeuristics.placeFromCoordinates(
+  }) async {
+    final context = await PlaceResolver().resolve(
       position.latitude,
       position.longitude,
     );
     final cacheText = cached ? '前回取得した位置から' : '現在地から';
     return LocationRead(
       status: LocationReadStatus.ready,
-      place: place,
+      place: context.place,
+      context: context,
       time: time,
       latitude: position.latitude,
       longitude: position.longitude,
       accuracyMeters: position.accuracy,
       cached: cached,
-      message: '$cacheText「${place.label}」っぽい気配を候補にしました。必要なら下で直せます。',
+      message:
+          '$cacheText「${context.displayHint}」として読み取りました。記憶には住所ではなく場所カテゴリだけを使います。',
     );
   }
 }

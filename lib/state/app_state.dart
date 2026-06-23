@@ -7,7 +7,9 @@ import '../models/contexts.dart';
 import '../models/evolution.dart';
 import '../models/life_dna.dart';
 import '../models/memory_card.dart';
+import '../models/place_context.dart';
 import '../models/walk.dart';
+import '../services/entitlement_service.dart';
 import 'persistence.dart';
 
 /// The single source of truth for the running game. A lightweight
@@ -59,12 +61,14 @@ class AppState extends ChangeNotifier {
 
   /// Hatch the companion from the first scanned place context.
   /// Returns the very first memory the companion writes.
-  MemoryCard hatch(PlaceType place, TimeContext time, WeatherContext weather) {
-    final seedDna = Walk(
-      stops: [RouteStop(place)],
-      time: time,
-      weather: weather,
-    ).dna;
+  MemoryCard hatch(
+    PlaceType place,
+    TimeContext time,
+    WeatherContext weather, {
+    PlaceContext? placeContext,
+  }) {
+    final firstStop = RouteStop(place, context: placeContext);
+    final seedDna = Walk(stops: [firstStop], time: time, weather: weather).dna;
     _companion = Companion(
       id: 'companion-1',
       name: '', // set below from its form
@@ -83,11 +87,7 @@ class AppState extends ChangeNotifier {
 
     _weekDna = seedDna;
 
-    final firstWalk = Walk(
-      stops: [RouteStop(place)],
-      time: time,
-      weather: weather,
-    );
+    final firstWalk = Walk(stops: [firstStop], time: time, weather: weather);
     final memory = MemoryGenerator.generate(
       firstWalk,
       seed: place.index + 3,
@@ -169,7 +169,38 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<EntitlementResult> purchasePremiumDemo({
+    EntitlementService service = const DemoEntitlementService(),
+  }) async {
+    final result = await service.purchasePremium();
+    _applyEntitlement(result);
+    return result;
+  }
+
+  Future<EntitlementResult> restorePremiumDemo({
+    EntitlementService service = const DemoEntitlementService(),
+  }) async {
+    final result = await service.restorePremium();
+    _applyEntitlement(result);
+    return result;
+  }
+
+  Future<EntitlementResult> cancelPremiumDemo({
+    EntitlementService service = const DemoEntitlementService(),
+  }) async {
+    final result = await service.cancelPremium();
+    _applyEntitlement(result);
+    return result;
+  }
+
   void dismissPremiumTeaser() {
+    _premiumTeaserSeen = true;
+    _persist();
+    notifyListeners();
+  }
+
+  void _applyEntitlement(EntitlementResult result) {
+    _isPremium = result.isActive;
     _premiumTeaserSeen = true;
     _persist();
     notifyListeners();

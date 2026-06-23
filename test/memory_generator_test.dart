@@ -3,6 +3,7 @@ import 'package:geofamiliar/logic/memory_generator.dart';
 import 'package:geofamiliar/models/contexts.dart';
 import 'package:geofamiliar/models/dna_trait.dart';
 import 'package:geofamiliar/models/memory_card.dart';
+import 'package:geofamiliar/models/place_context.dart';
 import 'package:geofamiliar/models/walk.dart';
 
 Walk _walk(List<PlaceType> places, TimeContext time, WeatherContext weather) =>
@@ -49,6 +50,26 @@ void main() {
       expect(memory.diary, isNotEmpty);
       expect(memory.dayLabel, '3日目');
       expect(memory.places.length, 2);
+      expect(memory.placeHints.length, 2);
+    });
+
+    test('uses broad place hints from GPS-derived contexts', () {
+      final walk = Walk(
+        stops: [
+          RouteStop(
+            PlaceType.station,
+            context: PlaceContext.fromCategory(PlaceMeaningCategory.station),
+          ),
+        ],
+        time: TimeContext.morning,
+        weather: WeatherContext.clear,
+      );
+
+      final memory = MemoryGenerator.generate(walk, seed: 0, dayIndex: 1);
+
+      expect(memory.placeHints, ['駅周辺']);
+      expect(memory.diary, contains('駅周辺'));
+      expect(memory.toJson().toString(), isNot(contains('coarseLatitude')));
     });
 
     test('premium memories add a voice-style flourish', () {
@@ -81,6 +102,7 @@ void main() {
       expect(restored.time, memory.time);
       expect(restored.weather, memory.weather);
       expect(restored.places, memory.places);
+      expect(restored.placeHints, memory.placeHints);
     });
   });
 }

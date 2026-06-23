@@ -6,6 +6,7 @@ import '../models/contexts.dart';
 import '../models/dna_trait.dart';
 import '../models/life_dna.dart';
 import '../models/memory_card.dart';
+import '../models/place_context.dart';
 import '../models/walk.dart';
 import '../services/location_service.dart';
 import '../state/app_scope.dart';
@@ -44,9 +45,9 @@ class _WalkScreenState extends State<WalkScreen> {
     }
   }
 
-  void _addStop(PlaceType place) {
+  void _addStop(PlaceType place, {PlaceContext? context}) {
     if (_route.length >= _maxStops) return;
-    setState(() => _route.add(RouteStop(place)));
+    setState(() => _route.add(RouteStop(place, context: context)));
   }
 
   void _removeStop(int index) => setState(() => _route.removeAt(index));
@@ -77,7 +78,7 @@ class _WalkScreenState extends State<WalkScreen> {
       _locationMessage = read.message;
       if (read.isReady) {
         _time = read.time;
-        _route.add(RouteStop(read.place));
+        _route.add(RouteStop(read.place, context: read.context));
       }
     });
   }
@@ -270,7 +271,7 @@ class _WalkScreenState extends State<WalkScreen> {
                 const SizedBox(height: 2),
                 Text(
                   _locationMessage ??
-                      '許可した場合だけ、現在地から場所カテゴリを推定します。座標は保存・送信しません。',
+                      '許可した場合だけ、現在地から場所カテゴリを推定します。住所や座標は保存しません。',
                   style: const TextStyle(
                     fontSize: 12.5,
                     height: 1.3,
@@ -485,7 +486,8 @@ class _WalkScreenState extends State<WalkScreen> {
   }
 
   Widget _routeStopRow(int i) {
-    final place = _route[i].place;
+    final stop = _route[i];
+    final place = stop.place;
     final isLast = i == _route.length - 1;
     return IntrinsicHeight(
       child: Row(
@@ -538,7 +540,7 @@ class _WalkScreenState extends State<WalkScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            place.label,
+                            stop.displayLabel,
                             style: const TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w700,
@@ -546,7 +548,9 @@ class _WalkScreenState extends State<WalkScreen> {
                             ),
                           ),
                           Text(
-                            place.tagline,
+                            stop.context == null
+                                ? place.tagline
+                                : '${place.label}として記録。住所や座標は保存しません。',
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(

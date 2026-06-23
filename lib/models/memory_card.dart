@@ -12,6 +12,7 @@ class MemoryCard {
     required this.diary,
     required this.lead,
     required this.places,
+    required this.placeHints,
     required this.time,
     required this.weather,
     required this.dayLabel,
@@ -23,6 +24,7 @@ class MemoryCard {
   final String diary;
   final DnaTrait lead;
   final List<PlaceType> places;
+  final List<String> placeHints;
   final TimeContext time;
   final WeatherContext weather;
 
@@ -41,6 +43,7 @@ class MemoryCard {
     'diary': diary,
     'lead': lead.name,
     'places': places.map((p) => p.name).toList(),
+    'placeHints': placeHints,
     'time': time.name,
     'weather': weather.name,
     'dayLabel': dayLabel,
@@ -55,6 +58,11 @@ class MemoryCard {
     places: (json['places'] as List)
         .map((p) => PlaceType.fromName(p as String))
         .toList(),
+    placeHints:
+        (json['placeHints'] as List?)?.map((p) => p as String).toList() ??
+        (json['places'] as List)
+            .map((p) => PlaceType.fromName(p as String).label)
+            .toList(),
     time: TimeContext.fromName(json['time'] as String),
     weather: WeatherContext.fromName(json['weather'] as String),
     dayLabel: json['dayLabel'] as String,
