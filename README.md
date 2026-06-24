@@ -1,75 +1,83 @@
 # GeoFamiliar
 
-**いつもの場所から、生活圏だけの相棒を育てる位置情報ゲーム。**
+GeoFamiliar は、歩いた場所から相棒が見つかる位置情報ゲームです。
 
-駅、公園、カフェ、夜のコンビニなど、通った場所の気配が「生活圏DNA」になり、
-相棒の性格、気分、記憶、週間進化を形づくります。
+北極星はこれです。
 
-> Status: デモ / プレビュー版です。現在地取得は任意で、取得できた場合だけ場所カテゴリの候補に反映します。座標や住所は保存せず、記憶にはカテゴリ級の場所ヒントだけを残します。天気、アカウント、バックエンド、自由生成AIはまだモックです。
-> 相棒の見た目は、6フォーム x 4進化段階 x 3ムードの生成PNG資産 v1 を使用しています。
+> 地図を歩く → 行った場所が勝手にあなただけの相棒を選ぶ → 動いてる相棒が増える
 
-## 現在地と場所意味化の実装範囲
+## 現在の体験
 
-- 実端末では `geolocator` で現在地許可を求めます。拒否しても手動選択で遊べます。
-- 現在地が取得できた場合、`PlaceResolver` が OpenStreetMap Nominatim の逆引きを試みます。
-- 逆引きはタイムアウト・HTTP失敗・オフライン時にローカルfallbackへ戻ります。
-- 記憶に保存するのは `PlaceContext.displayHint` のようなカテゴリ級ヒントだけです。正確な住所と正確な座標は保存しません。
-- 実装ファイル:
-  - `lib/services/location_service.dart`
-  - `lib/services/place_resolver.dart`
-  - `lib/models/place_context.dart`
-  - `lib/models/walk.dart`
-  - `lib/logic/memory_generator.dart`
+- 起動すると最初に地図が開きます。
+- 地図上には現在地、近くのスポット、取得済みの相棒だけが出ます。
+- スポットの範囲に入ると、ボタン操作なしで相棒を自動取得します。
+- 取得済み相棒は地図上で常時コマ送りアニメします。
+- 相棒をタップすると詳細ページに入り、戻ると地図へ戻ります。
+- Webプレビューでは、GPSの代わりに地図クリックで疑似移動できます。
 
-## 静的検収証跡
+公開プレビュー:
 
-- アート差分: `web/art_acceptance/`
-- 場所カテゴリ因果: `web/place_evidence/`
-- 場所カテゴリ因果シートは、同じ初期条件から `水辺の近く x5` と `商業地の近く x5` で、生活圏DNA・相棒の姿・記憶文が分岐することを示します。
+https://new31005.github.io/summit-2026-06-23-geofamiliar/
 
-## コアループ
+## 実装済みフェーズ
 
-1. **誕生** - 今日の場所、時間帯、天気から相棒を生まれさせる。
-2. **ホーム** - 相棒の姿、気分、生活圏DNA、今週の進捗を見る。
-3. **さんぽ記録** - 歩いたあとに、実際に通った場所を追加する。現在地から候補追加も可能。
-4. **記憶** - 記録したさんぽから、相棒の短い日記が生まれる。
-5. **進化 / プレミアム** - 一週間のさんぽを進化カードにし、継承やアルバムの価値を見せる。
+### Phase 1: コアループ
 
-## 安全とプライバシー
+- ホームカード構成と手動拠点登録を廃止しました。
+- `MapScreen` をアプリの起動画面にしました。
+- メッシュ状のスポットを現在地周辺に先に配置します。
+- `SpotGridService.enteredSpot` が現在地とスポット距離を判定します。
+- `AppState.collectSpot` が重複取得を防ぎつつ、相棒と記憶を保存します。
 
-- 現在地取得は任意。拒否しても手動選択で遊べます。
-- 現在地はリバースジオコードでカテゴリ推定する場合があります。保存するのは「駅周辺」「水辺の近く」などの広い場所ヒントだけです。
-- 速度、距離、危ない寄り道、深夜の無理な外出は評価しません。
-- 記憶文はテンプレート生成で、自由生成AIの過剰表現はしていません。
+### Phase 3: 地物リンクのハイブリッド設置
 
-## 技術
+- ランダムなメッシュスポットに加え、確定スポット層を追加しました。
+- 東京駅周辺の駅、公園、水辺、オフィス、コンビニ系スポットを `PlaceMeaningCategory` にリンクしています。
+- `MapSpot` は `source`、`category`、`brandId` を持ちます。
+- `brandId` により、将来のブランド限定スポットを後付けできます。
+- マイナー地物は全解決せず、メッシュ側のランダム性に任せます。
 
-- Flutter stable + Dart / Material 3
-- `ChangeNotifier` と `InheritedNotifier` による軽量状態管理
-- `shared_preferences` によるローカル保存
-- `geolocator` による任意の現在地取得
-- OpenStreetMap Nominatim 逆引き + タイムアウト時のオフラインfallbackによる場所意味化
-- `assets/companion/` の透明PNG資産による相棒表示
-- Flutter Web はスマホ確認用の公開プレビュー。正式ターゲットは Android / iOS ネイティブです。
+### Phase 2: 動く相棒
 
-## 実行
+- 取得済み相棒を静止画ではなく、常時コマ送りアニメにしました。
+- 既存の `normal`、`happy`、`rest` PNGをフレームとして使います。
+- タイマー駆動で上下移動、拡縮、傾きを加えています。
+- 詳細情報は別ページへ分離し、地図ホームに戻していません。
 
-```bash
-flutter pub get
-flutter run
-```
+## 主なファイル
+
+- `lib/app.dart`
+- `lib/screens/map_screen.dart`
+- `lib/screens/familiar_detail_screen.dart`
+- `lib/models/map_spot.dart`
+- `lib/models/map_familiar.dart`
+- `lib/services/spot_grid_service.dart`
+- `lib/services/spot_placement_service.dart`
+- `lib/services/confirmed_spot_catalog.dart`
+- `lib/services/place_resolver.dart`
+- `lib/widgets/animated_familiar_sprite.dart`
 
 ## 検証
 
 ```bash
-flutter pub get
+dart format lib test
 flutter analyze
 flutter test
-flutter build web
+flutter build web --release --base-href "/summit-2026-06-23-geofamiliar/"
 ```
 
-## 既知の未実装
+直近の確認:
 
-- 実決済、サーバー側権利確認、アカウント同期、プッシュ通知は未実装です。プレミアムは購入・復元・解除を確認できるデモ権利サービスです。
-- 継承はプレミアム価値として見せていますが、完全なプレイアブル機能ではありません。
-- 相棒PNGはv1生成資産です。商用配信前には手作業のアートディレクションと破綻チェックが必要です。
+- `flutter analyze`: No issues
+- `flutter test`: 50 tests passed
+- `flutter build web --release`: succeeded
+- GitHub Pages公開済み
+- 旧 `review_evidence` / `place_evidence` / `art_acceptance` は公開元の `web/` から削除済み
+
+## 現在の制限
+
+- Flutter Webは検証用プレビューです。
+- 実歩行での最終評価は Android / iOS ネイティブ版で行う必要があります。
+- Webでは位置情報権限が使えない場合、地図クリックで疑似移動します。
+- 確定スポットカタログは現在、東京駅周辺の初期検証用です。
+- ブランドコラボは構造のみ実装済みで、実際のコラボ配信は未実装です。
