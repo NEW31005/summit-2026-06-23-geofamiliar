@@ -287,7 +287,7 @@ class _DemoWalkButton extends StatelessWidget {
       child: SizedBox.square(
         dimension: 48,
         child: Material(
-          color: Colors.white.withValues(alpha: 0.92),
+          color: AppColors.mintDeep,
           shape: const CircleBorder(),
           elevation: 4,
           shadowColor: Colors.black.withValues(alpha: 0.18),
@@ -295,7 +295,7 @@ class _DemoWalkButton extends StatelessWidget {
             onPressed: onPressed,
             icon: Icon(
               isPlaying ? Icons.pause_rounded : Icons.directions_walk_rounded,
-              color: AppColors.mintDeep,
+              color: Colors.white,
             ),
           ),
         ),
