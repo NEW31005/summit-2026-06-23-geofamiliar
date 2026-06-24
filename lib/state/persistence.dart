@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/companion.dart';
 import '../models/evolution.dart';
 import '../models/life_dna.dart';
+import '../models/map_familiar.dart';
 import '../models/memory_card.dart';
 
 /// A snapshot of everything we persist locally. Kept deliberately small and
@@ -15,6 +16,7 @@ class GameSnapshot {
     required this.memories,
     required this.weeklyCards,
     required this.weekDna,
+    required this.familiars,
     required this.memoriesThisWeek,
     required this.isPremium,
     required this.premiumTeaserSeen,
@@ -24,6 +26,7 @@ class GameSnapshot {
   final List<MemoryCard> memories;
   final List<WeeklyCard> weeklyCards;
   final LifeDna weekDna;
+  final List<MapFamiliar> familiars;
   final int memoriesThisWeek;
   final bool isPremium;
   final bool premiumTeaserSeen;
@@ -33,6 +36,7 @@ class GameSnapshot {
     'memories': memories.map((m) => m.toJson()).toList(),
     'weeklyCards': weeklyCards.map((c) => c.toJson()).toList(),
     'weekDna': weekDna.toJson(),
+    'familiars': familiars.map((f) => f.toJson()).toList(),
     'memoriesThisWeek': memoriesThisWeek,
     'isPremium': isPremium,
     'premiumTeaserSeen': premiumTeaserSeen,
@@ -47,6 +51,9 @@ class GameSnapshot {
         .map((c) => WeeklyCard.fromJson(c as Map<String, dynamic>))
         .toList(),
     weekDna: LifeDna.fromJson(json['weekDna'] as Map<String, dynamic>),
+    familiars: ((json['familiars'] as List?) ?? const [])
+        .map((f) => MapFamiliar.fromJson(f as Map<String, dynamic>))
+        .toList(),
     memoriesThisWeek: json['memoriesThisWeek'] as int? ?? 0,
     isPremium: json['isPremium'] as bool? ?? false,
     premiumTeaserSeen: json['premiumTeaserSeen'] as bool? ?? false,

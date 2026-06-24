@@ -6,6 +6,8 @@ import '../models/companion.dart';
 import '../models/contexts.dart';
 import '../models/evolution.dart';
 import '../models/life_dna.dart';
+import '../models/map_familiar.dart';
+import '../models/map_spot.dart';
 import '../models/memory_card.dart';
 import '../models/place_context.dart';
 import '../models/walk.dart';
@@ -20,6 +22,7 @@ class AppState extends ChangeNotifier {
   Companion _companion = Companion.egg();
   final List<MemoryCard> _memories = [];
   final List<WeeklyCard> _weeklyCards = [];
+  final List<MapFamiliar> _familiars = [];
   LifeDna _weekDna = LifeDna.empty();
   int _memoriesThisWeek = 0;
   bool _isPremium = false;
@@ -29,6 +32,9 @@ class AppState extends ChangeNotifier {
   Companion get companion => _companion;
   List<MemoryCard> get memories => List.unmodifiable(_memories);
   List<WeeklyCard> get weeklyCards => List.unmodifiable(_weeklyCards);
+  List<MapFamiliar> get familiars => List.unmodifiable(_familiars);
+  Set<String> get capturedSpotIds =>
+      _familiars.map((familiar) => familiar.spotId).toSet();
   LifeDna get weekDna => _weekDna;
   int get memoriesThisWeek => _memoriesThisWeek;
   bool get isPremium => _isPremium;
@@ -50,6 +56,9 @@ class AppState extends ChangeNotifier {
       _weeklyCards
         ..clear()
         ..addAll(snapshot.weeklyCards);
+      _familiars
+        ..clear()
+        ..addAll(snapshot.familiars);
       _weekDna = snapshot.weekDna;
       _memoriesThisWeek = snapshot.memoriesThisWeek;
       _isPremium = snapshot.isPremium;
@@ -129,6 +138,43 @@ class AppState extends ChangeNotifier {
     _persist();
     notifyListeners();
     return memory;
+  }
+
+  MapFamiliar? collectSpot(
+    MapSpot spot, {
+    TimeContext? time,
+    WeatherContext weather = WeatherContext.clear,
+    PlaceContext? placeContext,
+  }) {
+    if (capturedSpotIds.contains(spot.id)) return null;
+
+    final resolvedTime =
+        time ??
+        TimeContext.fromName(DateTime.now().hour < 16 ? 'noon' : 'sunset');
+    final context = placeContext ?? PlaceContext.manual(spot.place);
+    final stop = RouteStop(spot.place, context: context);
+    final walk = Walk(stops: [stop], time: resolvedTime, weather: weather);
+
+    if (!hasHatched) {
+      hatch(spot.place, resolvedTime, weather, placeContext: context);
+    } else {
+      completeWalk(walk);
+    }
+
+    final familiar = MapFamiliar(
+      id: 'familiar-${_familiars.length + 1}',
+      spotId: spot.id,
+      latitude: spot.latitude,
+      longitude: spot.longitude,
+      place: spot.place,
+      acquiredAt: DateTime.now(),
+      visualSeed: spot.place.index + _familiars.length + 1,
+    );
+    _familiars.insert(0, familiar);
+
+    _persist();
+    notifyListeners();
+    return familiar;
   }
 
   /// Claim the weekly evolution card once enough walks are lived. Returns null
@@ -211,6 +257,7 @@ class AppState extends ChangeNotifier {
     _companion = Companion.egg();
     _memories.clear();
     _weeklyCards.clear();
+    _familiars.clear();
     _weekDna = LifeDna.empty();
     _memoriesThisWeek = 0;
     _isPremium = false;
@@ -226,6 +273,7 @@ class AppState extends ChangeNotifier {
         memories: _memories,
         weeklyCards: _weeklyCards,
         weekDna: _weekDna,
+        familiars: _familiars,
         memoriesThisWeek: _memoriesThisWeek,
         isPremium: _isPremium,
         premiumTeaserSeen: _premiumTeaserSeen,

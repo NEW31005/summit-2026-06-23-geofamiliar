@@ -1,27 +1,24 @@
+import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:geofamiliar/app.dart';
 import 'package:geofamiliar/models/contexts.dart';
+import 'package:geofamiliar/models/map_spot.dart';
 import 'package:geofamiliar/models/walk.dart';
 import 'package:geofamiliar/state/app_state.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   setUp(() {
-    // Start each test from clean local storage.
     SharedPreferences.setMockInitialValues({});
   });
 
-  testWidgets('fresh launch shows the hatch onboarding flow', (tester) async {
+  testWidgets('fresh launch opens directly on the map loop', (tester) async {
     final state = AppState();
     await state.init();
-    await tester.pumpWidget(GeoFamiliarApp(state: state));
-    // The companion avatar animates forever, so advance time manually rather
-    // than pumpAndSettle (which would never converge).
+    await tester.pumpWidget(GeoFamiliarApp(state: state, showMapTiles: false));
     await tester.pump(const Duration(milliseconds: 600));
 
-    expect(find.text('GeoFamiliar'), findsOneWidget);
-    expect(find.text('今日の場所から生まれさせる'), findsOneWidget);
-    expect(state.hasHatched, isFalse);
+    expect(find.byKey(const ValueKey('geo-map-screen')), findsOneWidget);
   });
 
   group('AppState game loop', () {
@@ -35,6 +32,44 @@ void main() {
       expect(state.companion.dna.sum, greaterThan(0));
       expect(state.memories.length, 1);
       expect(state.companion.name, isNotEmpty);
+    });
+
+    test('collecting a map spot hatches and records a familiar', () async {
+      final state = AppState();
+      await state.init();
+
+      final familiar = state.collectSpot(
+        const MapSpot(
+          id: 'test:station',
+          latitude: 35.681236,
+          longitude: 139.767125,
+          place: PlaceType.station,
+        ),
+        time: TimeContext.morning,
+      );
+
+      expect(familiar, isNotNull);
+      expect(state.hasHatched, isTrue);
+      expect(state.familiars.length, 1);
+      expect(state.capturedSpotIds, contains('test:station'));
+      expect(state.memories.length, 1);
+    });
+
+    test('collecting the same map spot twice does not duplicate', () async {
+      final state = AppState();
+      await state.init();
+      const spot = MapSpot(
+        id: 'test:park',
+        latitude: 35.681236,
+        longitude: 139.767125,
+        place: PlaceType.park,
+      );
+
+      expect(state.collectSpot(spot), isNotNull);
+      expect(state.collectSpot(spot), isNull);
+
+      expect(state.familiars.length, 1);
+      expect(state.memories.length, 1);
     });
 
     test('completing walks grows the companion and adds memories', () async {
@@ -56,7 +91,7 @@ void main() {
       expect(state.companion.totalWalks, 5);
       expect(state.companion.walksThisWeek, 5);
       expect(state.companion.dna.sum, greaterThan(beforeDna));
-      expect(state.memories.length, 6); // hatch + 5 walks
+      expect(state.memories.length, 6);
       expect(state.companion.weekReady, isTrue);
     });
 
@@ -116,6 +151,7 @@ void main() {
 
       await state.resetGame();
       expect(state.hasHatched, isFalse);
+      expect(state.familiars, isEmpty);
       expect(state.memories, isEmpty);
       expect(state.isPremium, isFalse);
     });

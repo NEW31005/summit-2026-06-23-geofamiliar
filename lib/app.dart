@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'screens/hatch_screen.dart';
-import 'screens/home_shell.dart';
+import 'screens/map_screen.dart';
 import 'state/app_scope.dart';
 import 'state/app_state.dart';
 import 'theme/app_colors.dart';
@@ -10,9 +9,14 @@ import 'theme/app_theme.dart';
 /// Root of the app. Wraps the tree in an [AppScope] and routes between the
 /// first-run hatch flow and the main home shell.
 class GeoFamiliarApp extends StatelessWidget {
-  const GeoFamiliarApp({super.key, required this.state});
+  const GeoFamiliarApp({
+    super.key,
+    required this.state,
+    this.showMapTiles = true,
+  });
 
   final AppState state;
+  final bool showMapTiles;
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +26,7 @@ class GeoFamiliarApp extends StatelessWidget {
         title: 'GeoFamiliar 生活圏の相棒',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.light(),
-        home: const _RootGate(),
+        home: _RootGate(showMapTiles: showMapTiles),
       ),
     );
   }
@@ -31,7 +35,9 @@ class GeoFamiliarApp extends StatelessWidget {
 /// Decides the first screen: a brief loading state, then either onboarding
 /// (no companion yet) or the home shell.
 class _RootGate extends StatelessWidget {
-  const _RootGate();
+  const _RootGate({required this.showMapTiles});
+
+  final bool showMapTiles;
 
   @override
   Widget build(BuildContext context) {
@@ -47,10 +53,8 @@ class _RootGate extends StatelessWidget {
     }
 
     return AnimatedSwitcher(
-      duration: const Duration(milliseconds: 400),
-      child: state.hasHatched
-          ? const HomeShell(key: ValueKey('home'))
-          : const HatchScreen(key: ValueKey('hatch')),
+      duration: const Duration(milliseconds: 250),
+      child: MapScreen(key: const ValueKey('map'), showTiles: showMapTiles),
     );
   }
 }
