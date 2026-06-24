@@ -11,6 +11,7 @@ import '../models/dna_trait.dart';
 import '../models/map_familiar.dart';
 import '../models/map_spot.dart';
 import '../screens/familiar_detail_screen.dart';
+import '../services/demo_walk_route.dart';
 import '../services/location_service.dart';
 import '../services/spot_placement_service.dart';
 import '../services/spot_grid_service.dart';
@@ -35,8 +36,10 @@ class _MapScreenState extends State<MapScreen> {
     SpotGridService.defaultCenter,
   );
   StreamSubscription<Position>? _positionSub;
+  Timer? _demoWalkTimer;
   bool _hasGps = false;
   bool _mapReady = false;
+  bool _isDemoWalking = false;
 
   @override
   void initState() {
@@ -51,6 +54,7 @@ class _MapScreenState extends State<MapScreen> {
   @override
   void dispose() {
     _positionSub?.cancel();
+    _demoWalkTimer?.cancel();
     super.dispose();
   }
 
@@ -210,9 +214,52 @@ class _MapScreenState extends State<MapScreen> {
               ),
             ],
           ),
+          if (kIsWeb)
+            Positioned(
+              right: 16,
+              bottom: 16 + MediaQuery.paddingOf(context).bottom,
+              child: _DemoWalkButton(
+                isPlaying: _isDemoWalking,
+                onPressed: _toggleDemoWalk,
+              ),
+            ),
         ],
       ),
     );
+  }
+
+  void _toggleDemoWalk() {
+    if (_isDemoWalking) {
+      _stopDemoWalk();
+      return;
+    }
+    final route = DemoWalkRoute.tokyoStationLoop();
+    var index = 0;
+
+    setState(() => _isDemoWalking = true);
+    _demoWalkTimer?.cancel();
+
+    void step() {
+      if (!mounted) return;
+      if (index >= route.length) {
+        _stopDemoWalk();
+        return;
+      }
+      _setPosition(route[index], centerMap: true, fromGps: true);
+      index++;
+    }
+
+    step();
+    _demoWalkTimer = Timer.periodic(
+      const Duration(milliseconds: 1200),
+      (_) => step(),
+    );
+  }
+
+  void _stopDemoWalk() {
+    _demoWalkTimer?.cancel();
+    _demoWalkTimer = null;
+    if (mounted) setState(() => _isDemoWalking = false);
   }
 
   void _openFamiliar(MapFamiliar familiar) {
@@ -221,6 +268,36 @@ class _MapScreenState extends State<MapScreen> {
         builder: (context) => FamiliarDetailScreen(
           familiar: familiar,
           trait: _traitForPlace(familiar.place),
+        ),
+      ),
+    );
+  }
+}
+
+class _DemoWalkButton extends StatelessWidget {
+  const _DemoWalkButton({required this.isPlaying, required this.onPressed});
+
+  final bool isPlaying;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return Tooltip(
+      message: isPlaying ? '擬似GPSを停止' : '擬似GPSウォーク',
+      child: SizedBox.square(
+        dimension: 48,
+        child: Material(
+          color: Colors.white.withValues(alpha: 0.92),
+          shape: const CircleBorder(),
+          elevation: 4,
+          shadowColor: Colors.black.withValues(alpha: 0.18),
+          child: IconButton(
+            onPressed: onPressed,
+            icon: Icon(
+              isPlaying ? Icons.pause_rounded : Icons.directions_walk_rounded,
+              color: AppColors.mintDeep,
+            ),
+          ),
         ),
       ),
     );

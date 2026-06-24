@@ -34,7 +34,7 @@ class _AnimatedFamiliarSpriteState extends State<AnimatedFamiliarSprite> {
   @override
   void initState() {
     super.initState();
-    _timer = Timer.periodic(const Duration(milliseconds: 240), (_) {
+    _timer = Timer.periodic(const Duration(milliseconds: 320), (_) {
       if (!mounted) return;
       setState(() => _tick++);
     });

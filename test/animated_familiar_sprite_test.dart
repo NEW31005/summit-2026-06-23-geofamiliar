@@ -24,14 +24,14 @@ void main() {
       findsOneWidget,
     );
 
-    await tester.pump(const Duration(milliseconds: 260));
+    await tester.pump(const Duration(milliseconds: 340));
 
     expect(
       find.byKey(const ValueKey('familiar-sprite-calm-happy')),
       findsOneWidget,
     );
 
-    await tester.pump(const Duration(milliseconds: 500));
+    await tester.pump(const Duration(milliseconds: 660));
 
     expect(
       find.byKey(const ValueKey('familiar-sprite-calm-rest')),
