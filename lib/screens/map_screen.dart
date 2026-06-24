@@ -10,11 +10,13 @@ import '../models/contexts.dart';
 import '../models/dna_trait.dart';
 import '../models/map_familiar.dart';
 import '../models/map_spot.dart';
+import '../screens/familiar_detail_screen.dart';
 import '../services/location_service.dart';
 import '../services/spot_placement_service.dart';
 import '../services/spot_grid_service.dart';
 import '../state/app_scope.dart';
 import '../theme/app_colors.dart';
+import '../widgets/animated_familiar_sprite.dart';
 
 class MapScreen extends StatefulWidget {
   const MapScreen({super.key, this.showTiles = true});
@@ -192,7 +194,11 @@ class _MapScreenState extends State<MapScreen> {
                       point: LatLng(familiar.latitude, familiar.longitude),
                       width: 56,
                       height: 56,
-                      child: _FamiliarPin(familiar: familiar),
+                      child: GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onTap: () => _openFamiliar(familiar),
+                        child: _FamiliarPin(familiar: familiar),
+                      ),
                     ),
                   Marker(
                     point: _current,
@@ -205,6 +211,17 @@ class _MapScreenState extends State<MapScreen> {
             ],
           ),
         ],
+      ),
+    );
+  }
+
+  void _openFamiliar(MapFamiliar familiar) {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (context) => FamiliarDetailScreen(
+          familiar: familiar,
+          trait: _traitForPlace(familiar.place),
+        ),
       ),
     );
   }
@@ -292,25 +309,11 @@ class _FamiliarPin extends StatelessWidget {
           ),
         ],
       ),
-      child: _FamiliarSprite(place: familiar.place, size: 48),
-    );
-  }
-}
-
-class _FamiliarSprite extends StatelessWidget {
-  const _FamiliarSprite({required this.place, required this.size});
-
-  final PlaceType place;
-  final double size;
-
-  @override
-  Widget build(BuildContext context) {
-    return Image.asset(
-      'assets/companion/hatchling/${_traitForPlace(place).name}_normal.png',
-      width: size,
-      height: size,
-      fit: BoxFit.contain,
-      filterQuality: FilterQuality.high,
+      child: AnimatedFamiliarSprite(
+        trait: _traitForPlace(familiar.place),
+        seed: familiar.visualSeed,
+        size: 48,
+      ),
     );
   }
 }
