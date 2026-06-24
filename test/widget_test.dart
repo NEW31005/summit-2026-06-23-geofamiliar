@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:geofamiliar/app.dart';
 import 'package:geofamiliar/models/contexts.dart';
 import 'package:geofamiliar/models/map_spot.dart';
+import 'package:geofamiliar/models/place_context.dart';
 import 'package:geofamiliar/models/walk.dart';
 import 'package:geofamiliar/state/app_state.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -44,6 +45,7 @@ void main() {
           latitude: 35.681236,
           longitude: 139.767125,
           place: PlaceType.station,
+          category: PlaceMeaningCategory.station,
         ),
         time: TimeContext.morning,
       );
@@ -63,6 +65,7 @@ void main() {
         latitude: 35.681236,
         longitude: 139.767125,
         place: PlaceType.park,
+        category: PlaceMeaningCategory.park,
       );
 
       expect(state.collectSpot(spot), isNotNull);

@@ -4,6 +4,7 @@ import 'package:latlong2/latlong.dart';
 
 import '../models/contexts.dart';
 import '../models/map_spot.dart';
+import 'place_resolver.dart';
 
 class SpotGridService {
   const SpotGridService._();
@@ -25,12 +26,14 @@ class SpotGridService {
       ) {
         final latCell = baseLatCell + latOffset;
         final lonCell = baseLonCell + lonOffset;
+        final place = _placeForCell(latCell, lonCell);
         spots.add(
           MapSpot(
             id: '$latCell:$lonCell',
             latitude: _cellCenter(latCell),
             longitude: _cellCenter(lonCell),
-            place: _placeForCell(latCell, lonCell),
+            place: place,
+            category: PlaceMeaningMapper.fromPlaceType(place),
           ),
         );
       }

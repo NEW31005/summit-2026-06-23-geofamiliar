@@ -151,7 +151,7 @@ class AppState extends ChangeNotifier {
     final resolvedTime =
         time ??
         TimeContext.fromName(DateTime.now().hour < 16 ? 'noon' : 'sunset');
-    final context = placeContext ?? PlaceContext.manual(spot.place);
+    final context = placeContext ?? spot.toPlaceContext();
     final stop = RouteStop(spot.place, context: context);
     final walk = Walk(stops: [stop], time: resolvedTime, weather: weather);
 

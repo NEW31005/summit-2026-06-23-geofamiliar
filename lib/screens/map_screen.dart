@@ -10,8 +10,8 @@ import '../models/contexts.dart';
 import '../models/dna_trait.dart';
 import '../models/map_familiar.dart';
 import '../models/map_spot.dart';
-import '../models/place_context.dart';
 import '../services/location_service.dart';
+import '../services/spot_placement_service.dart';
 import '../services/spot_grid_service.dart';
 import '../state/app_scope.dart';
 import '../theme/app_colors.dart';
@@ -29,7 +29,7 @@ class _MapScreenState extends State<MapScreen> {
   final _mapController = MapController();
 
   LatLng _current = SpotGridService.defaultCenter;
-  List<MapSpot> _spots = SpotGridService.generateAround(
+  List<MapSpot> _spots = SpotPlacementService.generateAround(
     SpotGridService.defaultCenter,
   );
   StreamSubscription<Position>? _positionSub;
@@ -105,7 +105,7 @@ class _MapScreenState extends State<MapScreen> {
     setState(() {
       _current = point;
       _hasGps = fromGps || _hasGps;
-      _spots = SpotGridService.generateAround(point);
+      _spots = SpotPlacementService.generateAround(point);
     });
 
     if (centerMap && _mapReady) {
@@ -127,7 +127,7 @@ class _MapScreenState extends State<MapScreen> {
       spot,
       time: LocationHeuristics.timeFromHour(DateTime.now().hour),
       weather: WeatherContext.clear,
-      placeContext: PlaceContext.manual(spot.place),
+      placeContext: spot.toPlaceContext(),
     );
     if (familiar == null || !mounted) return;
   }
@@ -252,11 +252,13 @@ class _SpotPin extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = _placeColor(spot.place);
+    final background = spot.isConfirmed ? color : Colors.white;
+    final iconColor = spot.isConfirmed ? Colors.white : color;
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: background,
         shape: BoxShape.circle,
-        border: Border.all(color: color, width: 3),
+        border: Border.all(color: color, width: spot.isConfirmed ? 4 : 3),
         boxShadow: [
           BoxShadow(
             color: color.withValues(alpha: 0.32),
@@ -265,7 +267,7 @@ class _SpotPin extends StatelessWidget {
           ),
         ],
       ),
-      child: Icon(_placeIcon(spot.place), color: color, size: 24),
+      child: Icon(_placeIcon(spot.place), color: iconColor, size: 24),
     );
   }
 }
